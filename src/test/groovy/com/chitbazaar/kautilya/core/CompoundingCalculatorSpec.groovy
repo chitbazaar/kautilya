@@ -9,11 +9,17 @@ class CompoundingCalculatorSpec extends Specification {
 
     def "C.Interest Should work #scenario"() {
         when:
-        double ci = sut.compoundInterest(principal, ratePerInterval, numberOfIntervals, compoundingFrequency).round(2)
+        double ci
+        if (compoundingFrequency == null) {
+            ci = sut.compoundInterest(principal, ratePerInterval, numberOfIntervals).round(2)
+        } else {
+            ci = sut.compoundInterest(principal, ratePerInterval, numberOfIntervals, compoundingFrequency).round(2)
+        }
         then:
         ci == expected
         where:
         scenario                    || principal | ratePerInterval | numberOfIntervals | compoundingFrequency | expected
+        'simple +ve default freq'   || 100       | 12              | 1                 | null                 | 12.0
         'simple +ve'                || 100       | 12              | 1                 | 1                    | 12.0
         'simple -ve'                || 100       | -12             | 1                 | 1                    | -12.0
         '-ve principal'             || -100      | 12              | 1                 | 1                    | -12.0
@@ -27,11 +33,18 @@ class CompoundingCalculatorSpec extends Specification {
 
     def "C.Amount Should work #scenario"() {
         when:
-        double ci = sut.compoundAmount(principal, ratePerInterval, numberOfIntervals, compoundingFrequency).round(2)
+        double ca
+        if (compoundingFrequency == null) {
+            ca = sut.compoundAmount(principal, ratePerInterval, numberOfIntervals).round(2)
+        } else {
+            ca = sut.compoundAmount(principal, ratePerInterval, numberOfIntervals, compoundingFrequency).round(2)
+        }
+
         then:
-        ci == principal + expected
+        ca == principal + expected
         where:
         scenario                    || principal | ratePerInterval | numberOfIntervals | compoundingFrequency | expected
+        'simple +ve  default freq'  || 100       | 12              | 1                 | null                 | 12.0
         'simple +ve'                || 100       | 12              | 1                 | 1                    | 12.0
         'simple -ve'                || 100       | -12             | 1                 | 1                    | -12.0
         '-ve principal'             || -100      | 12              | 1                 | 1                    | -12.0
@@ -45,11 +58,17 @@ class CompoundingCalculatorSpec extends Specification {
 
     def "C.Principal Should work #scenario"() {
         when:
-        double ci = sut.compoundPrincipal(amount, ratePerInterval, numberOfIntervals, compoundingFrequency).round(2)
+        double cp
+        if (compoundingFrequency == null) {
+            cp = sut.compoundPrincipal(amount, ratePerInterval, numberOfIntervals).round(2)
+        } else {
+            cp = sut.compoundPrincipal(amount, ratePerInterval, numberOfIntervals, compoundingFrequency).round(2)
+        }
         then:
-        ci == expected
+        cp == expected
         where:
         scenario                    || amount | ratePerInterval | numberOfIntervals | compoundingFrequency | expected
+        'simple +ve default freq'   || 112    | 12              | 1                 | null                 | 100
         'simple +ve'                || 112    | 12              | 1                 | 1                    | 100
         'simple -ve'                || 88     | -12             | 1                 | 1                    | 100
         '-ve principal'             || -112   | 12              | 1                 | 1                    | -100
@@ -63,11 +82,17 @@ class CompoundingCalculatorSpec extends Specification {
 
     def "C.Rate Should work #scenario"() {
         when:
-        double ci = sut.compoundRate(principal, amount, numberOfIntervals, compoundingFrequency).round(2)
+        double cr
+        if (compoundingFrequency == null) {
+            cr = sut.compoundRate(principal, amount, numberOfIntervals).round(2)
+        } else {
+            cr = sut.compoundRate(principal, amount, numberOfIntervals, compoundingFrequency).round(2)
+        }
         then:
-        ci == expected
+        cr == expected
         where:
         scenario                    || amount | principal | numberOfIntervals | compoundingFrequency | expected
+        'simple +ve  default freq'  || 112    | 100       | 1                 | null                 | 12
         'simple +ve'                || 112    | 100       | 1                 | 1                    | 12
         'simple -ve'                || 88     | 100       | 1                 | 1                    | -12
         '-ve principal'             || -112   | -100      | 1                 | 1                    | 12

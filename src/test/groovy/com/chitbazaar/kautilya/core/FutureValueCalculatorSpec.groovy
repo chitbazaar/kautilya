@@ -25,6 +25,17 @@ class FutureValueCalculatorSpec extends Specification {
         'zero return and frequency' || 100       | 20              | 10                | 0                    | 100 + 0
     }
 
+    def "F.V-Default frequency should work #scenario"() {
+        when:
+        double fv = sut.futureValue(principal, ratePerInterval, numberOfIntervals).round(2)
+        then:
+        fv == expected
+        where:
+        scenario     || principal | ratePerInterval | numberOfIntervals | expected
+        'simple +ve' || 100       | 12              | 1                 | 100 + 12.0
+        'simple -ve' || 100       | -12             | 1                 | 100 - 12.0
+    }
+
     def "N.F.V should work #scenario"() {
         when:
         double nfv = sut.netFutureValue(cashFlows, ratePerInterval).round(2)

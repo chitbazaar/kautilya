@@ -31,16 +31,20 @@ public class CashFlowInfo {
         for (Integer index = 0; index < cashFlows.size(); index++) {
             Double cashFlow = cashFlows.get(index);
             if (Objects.isNull(cashFlow)) {
-                cleanedUpCashFlows.add(0d);
+                cashFlow = 0d;
+                cleanedUpCashFlows.add(cashFlow);
                 zeroCashFlowCount++;
             } else if (cashFlow < 0) {
                 cleanedUpCashFlows.add(cashFlow);
                 negativeCashFlowCount++;
                 negativeCashFLow += -1 * cashFlow;
-            } else {
+            } else if (cashFlow > 0) {
                 cleanedUpCashFlows.add(cashFlow);
                 positiveCashFlowCount++;
                 positiveCashFlow += cashFlow;
+            } else {
+                cleanedUpCashFlows.add(cashFlow);
+                zeroCashFlowCount++;
             }
             netCashFlow += cashFlow;
             if (index != 0 && index != cashFlows.size() - 1 && cashFlow != 0) {
@@ -164,7 +168,7 @@ public class CashFlowInfo {
 
         @Override
         public int compareTo(IRRAndNFV o) {
-            if (ratePerInterval == o.ratePerInterval) {
+            if (ratePerInterval.equals(o.ratePerInterval)) {
                 return Double.compare(Math.abs(nfv), Math.abs(o.nfv));
             }
             return Double.compare(ratePerInterval, o.ratePerInterval);
@@ -173,18 +177,6 @@ public class CashFlowInfo {
 
     public List<Double> getCashFlows() {
         return cashFlows;
-    }
-
-    public Integer getPositiveCashFlowCount() {
-        return positiveCashFlowCount;
-    }
-
-    public Integer getNegativeCashFlowCount() {
-        return negativeCashFlowCount;
-    }
-
-    public Integer getZeroCashFlowCount() {
-        return zeroCashFlowCount;
     }
 
     public Integer getNumberOfIntervals() {
@@ -213,13 +205,5 @@ public class CashFlowInfo {
 
     public IRRAndNFV getMaxReturnToCheck() {
         return maxReturnToCheck;
-    }
-
-    public Set<IRRAndNFV> getPositiveNFVToReturnSet() {
-        return positiveNFVToReturnSet;
-    }
-
-    public Set<IRRAndNFV> getNegativeNFVToReturnSet() {
-        return negativeNFVToReturnSet;
     }
 }

@@ -31,7 +31,7 @@ public class IRRCalculator {
 
     Double irr(CashFlowInfo cashFlowInfo) {
         if (cashFlowInfo.getNetCashFlow() == 0) {
-            return 0.0;
+            return 0.0d;
         }
         if (cashFlowInfo.getNegativeCashFLow() == 0) {
             return Double.POSITIVE_INFINITY;
@@ -44,9 +44,9 @@ public class IRRCalculator {
             Double last = Math.abs(cashFlowInfo.getCashFlows().get(cashFlowInfo.getCashFlows().size() - 1));
             return compoundingCalculator.compoundRate(first, last, cashFlowInfo.getNumberOfIntervals().doubleValue());
         }
-        Double min = cashFlowInfo.getMinReturnToCheck().ratePerInterval;
-        Double max = cashFlowInfo.getMaxReturnToCheck().ratePerInterval;
-        Double mid = ((min + max) / 2);
+        Double min = NumberUtils.round(cashFlowInfo.getMinReturnToCheck().ratePerInterval, precision);
+        Double max = NumberUtils.round(cashFlowInfo.getMaxReturnToCheck().ratePerInterval, precision);
+        Double mid = NumberUtils.round(((min + max) / 2), precision);
         Double maxDiff = increment + increment;
         Double nfvForMid;
         Double nfvForMin;
@@ -71,12 +71,12 @@ public class IRRCalculator {
                 min = mid;
             } else if (nfvForMin > 0 && nfvForMid > 0) {
                 min = mid;
-            } else if (nfvForMax < 0 && nfvForMax < 0) {
+            } else if (nfvForMax < 0 && nfvForMid < 0) {
                 max = mid;
-            } else if (nfvForMax > 0 && nfvForMax > 0) {
+            } else if (nfvForMax > 0 && nfvForMid > 0) {
                 max = mid;
             }
-            mid = ((min + max) / 2);
+            mid = NumberUtils.round(((min + max) / 2), precision);
         }
         TreeMap<Double, Double> nfvMap = new TreeMap<>();
         nfvMap.put(Math.abs(nfvForMin), min);
