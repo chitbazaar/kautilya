@@ -101,7 +101,7 @@ public class IRRHelper {
     }
 
     public void setNFVAndReturn(IRRAndNFV irrAndNFV, Set<IRRAndNFV> positiveNFVToReturnSet, Set<IRRAndNFV> negativeNFVToReturnSet) {
-        if (Objects.isNull(irrAndNFV)) {
+        if (Objects.isNull(irrAndNFV) || irrAndNFV.nfv.isNaN() || irrAndNFV.ratePerInterval.isNaN()) {
             return;
         }
         if (irrAndNFV.nfv > 0) {
@@ -148,10 +148,15 @@ public class IRRHelper {
 
     private IRRAndNFV getXAxisCut(IRRAndNFV x1y1, IRRAndNFV x2y2, List<Double> cashFlows) {
         Double slope = (x2y2.nfv - x1y1.nfv) / (x2y2.ratePerInterval - x1y1.ratePerInterval);
-        if (slope == 0) {
+        if (slope == 0 || slope.isNaN()) {
             return null;
         }
-        Double ratePerInterval = x2y2.ratePerInterval - x2y2.nfv / slope;
+        Double ratePerInterval = null;
+        if (slope.isInfinite()) {
+            ratePerInterval = 0d;
+        } else {
+            ratePerInterval = x2y2.ratePerInterval - x2y2.nfv / slope;
+        }
         Double netFutureValue = futureValueCalculator.netFutureValue(cashFlows, ratePerInterval);
         IRRAndNFV irrAndNFV = new IRRAndNFV(ratePerInterval, netFutureValue);
         return irrAndNFV;

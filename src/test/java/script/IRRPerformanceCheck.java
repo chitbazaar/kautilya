@@ -8,8 +8,10 @@ import java.util.List;
 
 public class IRRPerformanceCheck {
     Double numberOfTries = 1000d;
+
     public static void main(String[] args) {
         IRRPerformanceCheck irrPerformanceCheck = new IRRPerformanceCheck();
+        List<double[]> listOfInputs = new ArrayList<>();
         double[] input = {
                 -6000000d, -3000000d, -3000000d, -3000000d,
                 5000000d, 5000000d, 5000000d, 5000000d, 5000000d, 5000000d,
@@ -18,25 +20,47 @@ public class IRRPerformanceCheck {
                 19000000d, 19000000d, 19000000d, 19000000d, 19000000d,
                 31000000d, 31000000d, 31000000d, 31000000d, 31000000d
         };
-//        PerformanceInfo poiIRRPerformance = irrPerformanceCheck.checkPOIIRR(input);
-//        System.out.println(poiIRRPerformance.toString());
-
-        List<Double> cashFlows = new ArrayList<>();
-        for (double cashFlow : input) {
-            cashFlows.add(cashFlow);
+        listOfInputs.add(input);
+        double[] input2 = {
+                -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, 665802.7616772739d
+        };
+        listOfInputs.add(input2);
+        double[] input3 = {
+                100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -91965802.7616772739d
+        };
+        listOfInputs.add(input3);
+        List<PerformanceInfo> poiPerformanceList = new ArrayList<>();
+        for (double[] cashFlows : listOfInputs) {
+            poiPerformanceList.add(irrPerformanceCheck.checkPOIIRR(cashFlows));
         }
+        irrPerformanceCheck.print(poiPerformanceList);
+        List<PerformanceInfo> myIRRPerformanceList = new ArrayList<>();
+        for (double[] cashFlowsArray : listOfInputs) {
+            List<Double> cashFlows = irrPerformanceCheck.toList(cashFlowsArray);
+            myIRRPerformanceList.addAll(irrPerformanceCheck.checkMyIRR(cashFlows));
+        }
+        irrPerformanceCheck.print(myIRRPerformanceList);
 
-        List<PerformanceInfo> myIRRPerformance = irrPerformanceCheck.checkMyIRR(cashFlows);
+    }
 
-        for (PerformanceInfo performanceInfo : myIRRPerformance) {
+    private void print(List<PerformanceInfo> performanceInfos) {
+        for (PerformanceInfo performanceInfo : performanceInfos) {
             System.out.println(performanceInfo.toString());
         }
+    }
+
+    private List<Double> toList(double[] input) {
+        List<Double> list = new ArrayList<>();
+        for (double cashFlow : input) {
+            list.add(cashFlow);
+        }
+        return list;
     }
 
     List<PerformanceInfo> checkMyIRR(List<Double> cashFlows) {
 
         List<PerformanceInfo> infos = new ArrayList<>();
-        for (int precision = 14; precision <= 14; precision += 1) {
+        for (int precision = 0; precision <= 14; precision += 2) {
             System.out.printf("Checking for precision %s\n", precision);
             IRRCalculator irrCalculator = new IRRCalculator(precision);
             Double averageTime = 0d;

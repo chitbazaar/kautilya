@@ -5,7 +5,6 @@ import com.chitbazaar.kautilya.domain.MinMaxIRRAndNFV;
 import com.chitbazaar.kautilya.util.NumberUtils;
 
 import java.util.List;
-import java.util.TreeMap;
 
 public class IRRCalculator {
     private final int precision;
@@ -55,12 +54,16 @@ public class IRRCalculator {
         MinMaxIRRAndNFV minMaxIRRAndNFV = irrHelper.getInitialBounderies(cashFlowInfo);
         Double maxDiff = increment + increment;
         while (true) {
-            if(minMaxIRRAndNFV.min.nfv == 0){
+            if (minMaxIRRAndNFV.min.nfv == 0) {
                 return minMaxIRRAndNFV.min.ratePerInterval;
             }
-            if(minMaxIRRAndNFV.max.nfv == 0){
+            if (minMaxIRRAndNFV.max.nfv == 0) {
                 return minMaxIRRAndNFV.max.ratePerInterval;
             }
+            if (minMaxIRRAndNFV.min.ratePerInterval.isNaN() || minMaxIRRAndNFV.max.ratePerInterval.isNaN()) {
+                throw new RuntimeException("Unexpected NAN");
+            }
+//            System.out.printf("min:%s\tmax:%s\n", minMaxIRRAndNFV.min.ratePerInterval, minMaxIRRAndNFV.max.ratePerInterval);
             if (minMaxIRRAndNFV.getIRRAbsDifference() <= maxDiff) {
                 break;
             }
