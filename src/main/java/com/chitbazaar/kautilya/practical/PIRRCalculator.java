@@ -24,7 +24,6 @@ public class PIRRCalculator {
     }
 
     public Double pirr(List<Double> cashFlows, Integer precision) {
-        Double pirr = null;
         CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFlows, precision);
         double irr = irrCalculator.irr(cashFlowInfo);
         if (irr == 0 || irr == Double.POSITIVE_INFINITY || irr == Double.NEGATIVE_INFINITY) {
