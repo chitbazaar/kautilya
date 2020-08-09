@@ -7,36 +7,38 @@ import spock.lang.Unroll
 class IRRCalculatorSpec extends Specification {
     IRRCalculator sut
     FutureValueCalculator futureValueCalculator
+    Integer precision
 
     def setup() {
-        sut = new IRRCalculator(0)
+        precision = 0
+        sut = new IRRCalculator()
         futureValueCalculator = new FutureValueCalculator()
     }
 
     def "Should return IRR #scenario"() {
         when:
+        Double increment = Math.pow(0.1, precision);
         Double irr = sut.irr(cashFlows)
-        Double nfvBefore = futureValueCalculator.netFutureValue(cashFlows, (irr - sut.increment).round(sut.precision)).abs()
+        Double nfvBefore = futureValueCalculator.netFutureValue(cashFlows, (irr - increment).round(sut.defaultPrecision)).abs()
         Double nfv = futureValueCalculator.netFutureValue(cashFlows, irr).abs()
-        Double nfvAfter = futureValueCalculator.netFutureValue(cashFlows, (irr + sut.increment).round(sut.precision)).abs()
-        println nfv
+        Double nfvAfter = futureValueCalculator.netFutureValue(cashFlows, (irr + increment).round(sut.defaultPrecision)).abs()
         then:
         (nfvBefore >= nfv) && (nfv <= nfvAfter)
         where:
-        scenario                || cashFlows
-//        'simple +ve return'     || [-100d, 112d]
-//        'simple +ve return - 2' || [100d, -112d]
-//        'simple -ve return'     || [-100d, 88d]
-//        'simple -ve return - 2' || [88d, -100d]
-//        'Positive And Negative' || [-100.0d, 3.0d, 3.0d, 3.0d, 103.0d]
-//        'Small cash flows'      || [0.001d, 0.1d, 1d, 1d, 1d, 0d, 0d, 0d, 0d, -10d]
-//        'Some big flows'        || [-6000000d, -3000000d, -3000000d, -3000000d,
-//                                    5000000d, 5000000d, 5000000d, 5000000d, 5000000d, 5000000d,
-//                                    6600000d, 6600000d, 6600000d, 6600000d,
-//                                    10600000d, 10600000d, 10600000d, 10600000d, 10600000d, 10600000d,
-//                                    19000000d, 19000000d, 19000000d, 19000000d, 19000000d,
-//                                    31000000d, 31000000d, 31000000d, 31000000d, 31000000d]
-        'Some big flows 2'      || [100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -91965802.7616772739d]
+        scenario           || cashFlows
+        'simple +ve return'     || [-100d, 112d]
+        'simple +ve return - 2' || [100d, -112d]
+        'simple -ve return'     || [-100d, 88d]
+        'simple -ve return - 2' || [88d, -100d]
+        'Positive And Negative' || [-100.0d, 3.0d, 3.0d, 3.0d, 103.0d]
+        'Small cash flows'      || [0.001d, 0.1d, 1d, 1d, 1d, 0d, 0d, 0d, 0d, -10d]
+        'Some big flows'        || [-6000000d, -3000000d, -3000000d, -3000000d,
+                                    5000000d, 5000000d, 5000000d, 5000000d, 5000000d, 5000000d,
+                                    6600000d, 6600000d, 6600000d, 6600000d,
+                                    10600000d, 10600000d, 10600000d, 10600000d, 10600000d, 10600000d,
+                                    19000000d, 19000000d, 19000000d, 19000000d, 19000000d,
+                                    31000000d, 31000000d, 31000000d, 31000000d, 31000000d]
+        'Some big flows 2' || [100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -91965802.7616772739d]
     }
 
     def 'Check precision'() {

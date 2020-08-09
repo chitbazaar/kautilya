@@ -1,5 +1,7 @@
 package com.chitbazaar.kautilya.domain;
 
+import com.chitbazaar.kautilya.core.IRRCalculator;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +20,9 @@ public class CashFlowInfo {
     public final Integer precision;
 
     public CashFlowInfo(List<Double> cashFlows, Integer precision) {
+        if (precision < IRRCalculator.MIN_PRECISION || precision > IRRCalculator.MAX_PRECISION) {
+            throw new RuntimeException(String.format("Precision supported %s to %s inclusive", IRRCalculator.MIN_PRECISION, IRRCalculator.MAX_PRECISION));
+        }
         List<Double> cleanedUpCashFlows = new ArrayList();
         Double netCashFlow = 0d;
         Double positiveCashFlow = 0d;

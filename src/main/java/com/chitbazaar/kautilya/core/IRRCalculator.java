@@ -7,8 +7,9 @@ import com.chitbazaar.kautilya.util.NumberUtils;
 import java.util.List;
 
 public class IRRCalculator {
-    private final int precision;
-    private final Double increment;
+    public static final Integer MIN_PRECISION = 0;
+    public static final Integer MAX_PRECISION = 14;
+    private final int defaultPrecision;
     private FutureValueCalculator futureValueCalculator = new FutureValueCalculator();
     private CompoundingCalculator compoundingCalculator = new CompoundingCalculator();
     private IRRHelper irrHelper = new IRRHelper();
@@ -23,20 +24,19 @@ public class IRRCalculator {
 //        println value
 //        println((25.759135891535635 + 25.75913589153564) / 2)
 
-        if (precision < 0 || precision > 14) {
-            throw new RuntimeException("Precision supported 0 to 10 inclusive");
+        if (precision < MIN_PRECISION || precision > MAX_PRECISION) {
+            throw new RuntimeException(String.format("Precision supported %s to %s inclusive", MIN_PRECISION, MAX_PRECISION));
         }
-        this.precision = precision;
-        increment = Math.pow(0.1, precision);
+        this.defaultPrecision = precision;
     }
 
     public Double irr(List<Double> cashFlows) {
-        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFlows, precision);
+        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFlows, defaultPrecision);
         Double result = irr(cashFlowInfo);
-        return NumberUtils.round(result, precision);
+        return NumberUtils.round(result, defaultPrecision);
     }
 
-    Double irr(CashFlowInfo cashFlowInfo) {
+    public Double irr(CashFlowInfo cashFlowInfo) {
         if (cashFlowInfo.netCashFlow == 0) {
             return 0.0d;
         }
@@ -49,9 +49,10 @@ public class IRRCalculator {
         if (cashFlowInfo.onlyEndCashFlows) {
             Double first = Math.abs(cashFlowInfo.cashFlows.get(0));
             Double last = Math.abs(cashFlowInfo.cashFlows.get(cashFlowInfo.cashFlows.size() - 1));
-            return compoundingCalculator.compoundRate(first, last, cashFlowInfo.numberOfIntervals.doubleValue());
+            return NumberUtils.round(compoundingCalculator.compoundRate(first, last, cashFlowInfo.numberOfIntervals.doubleValue()), cashFlowInfo.precision);
         }
         MinMaxIRRAndNFV minMaxIRRAndNFV = irrHelper.getInitialBounderies(cashFlowInfo);
+        Double increment = Math.pow(0.1, cashFlowInfo.precision);
         Double maxDiff = increment + increment;
         while (true) {
             if (minMaxIRRAndNFV.min.nfv == 0) {
@@ -69,7 +70,7 @@ public class IRRCalculator {
             }
             minMaxIRRAndNFV = irrHelper.getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, cashFlowInfo);
         }
-        return minMaxIRRAndNFV.getIRRForLeastAbsNFV();
+        return NumberUtils.round(minMaxIRRAndNFV.getIRRForLeastAbsNFV(), cashFlowInfo.precision);
     }
 
 }
