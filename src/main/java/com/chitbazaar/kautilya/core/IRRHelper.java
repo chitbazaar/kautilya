@@ -68,21 +68,36 @@ public class IRRHelper {
         newMinMaxIRRAndNFV = getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         //Min tangential cut
-        Double minMinusOnePrecision = newMinMaxIRRAndNFV.min.ratePerInterval - cashFlowInfo.precision;
+        IRRAndNFV min = newMinMaxIRRAndNFV.min;
+        Double minMinusOnePrecision = min.ratePerInterval - cashFlowInfo.precision;
         IRRAndNFV nMinusOne = new IRRAndNFV(minMinusOnePrecision, futureValueCalculator.netFutureValue(cashFlowInfo.cashFlows, minMinusOnePrecision));
-        Double minPlusOnePrecision = newMinMaxIRRAndNFV.min.ratePerInterval + cashFlowInfo.precision;
+        Double minPlusOnePrecision = min.ratePerInterval + cashFlowInfo.precision;
         IRRAndNFV nPlusOne = new IRRAndNFV(minPlusOnePrecision, futureValueCalculator.netFutureValue(cashFlowInfo.cashFlows, minPlusOnePrecision));
+
         xAxisCut = getXAxisCut(nMinusOne, nPlusOne, cashFlowInfo.cashFlows);
         setNFVAndReturn(xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        xAxisCut = getXAxisCut(nMinusOne, min, cashFlowInfo.cashFlows);
+        setNFVAndReturn(xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        xAxisCut = getXAxisCut(min, nPlusOne, cashFlowInfo.cashFlows);
+        setNFVAndReturn(xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
+
+
         newMinMaxIRRAndNFV = getNewMinMaxIRRAndNFV(newMinMaxIRRAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         //Max tangential cut
-        Double maxMinusOnePrecision = newMinMaxIRRAndNFV.max.ratePerInterval - cashFlowInfo.precision;
+        IRRAndNFV max = newMinMaxIRRAndNFV.max;
+        Double maxMinusOnePrecision = max.ratePerInterval - cashFlowInfo.precision;
         nMinusOne = new IRRAndNFV(maxMinusOnePrecision, futureValueCalculator.netFutureValue(cashFlowInfo.cashFlows, maxMinusOnePrecision));
-        Double maxPlusOnePrecision = newMinMaxIRRAndNFV.max.ratePerInterval + cashFlowInfo.precision;
+        Double maxPlusOnePrecision = max.ratePerInterval + cashFlowInfo.precision;
         nPlusOne = new IRRAndNFV(maxPlusOnePrecision, futureValueCalculator.netFutureValue(cashFlowInfo.cashFlows, maxPlusOnePrecision));
+
         xAxisCut = getXAxisCut(nMinusOne, nPlusOne, cashFlowInfo.cashFlows);
         setNFVAndReturn(xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        xAxisCut = getXAxisCut(max, nPlusOne, cashFlowInfo.cashFlows);
+        setNFVAndReturn(xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        xAxisCut = getXAxisCut(nMinusOne, max, cashFlowInfo.cashFlows);
+        setNFVAndReturn(xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
+
         newMinMaxIRRAndNFV = getNewMinMaxIRRAndNFV(newMinMaxIRRAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         //Middle

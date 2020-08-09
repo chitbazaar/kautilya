@@ -18,19 +18,19 @@ public class IRRPerformanceCheck {
                 19000000d, 19000000d, 19000000d, 19000000d, 19000000d,
                 31000000d, 31000000d, 31000000d, 31000000d, 31000000d
         };
-        PerformanceInfo poiIRRPerformance = irrPerformanceCheck.checkPOIIRR(input);
-        System.out.println(poiIRRPerformance.toString());
+//        PerformanceInfo poiIRRPerformance = irrPerformanceCheck.checkPOIIRR(input);
+//        System.out.println(poiIRRPerformance.toString());
 
-//        List<Double> cashFlows = new ArrayList<>();
-//        for (double cashFlow : input) {
-//            cashFlows.add(cashFlow);
-//        }
-//
-//        List<PerformanceInfo> myIRRPerformance = irrPerformanceCheck.checkMyIRR(cashFlows);
-//
-//        for (PerformanceInfo performanceInfo : myIRRPerformance) {
-//            System.out.println(performanceInfo.toString());
-//        }
+        List<Double> cashFlows = new ArrayList<>();
+        for (double cashFlow : input) {
+            cashFlows.add(cashFlow);
+        }
+
+        List<PerformanceInfo> myIRRPerformance = irrPerformanceCheck.checkMyIRR(cashFlows);
+
+        for (PerformanceInfo performanceInfo : myIRRPerformance) {
+            System.out.println(performanceInfo.toString());
+        }
     }
 
     List<PerformanceInfo> checkMyIRR(List<Double> cashFlows) {
