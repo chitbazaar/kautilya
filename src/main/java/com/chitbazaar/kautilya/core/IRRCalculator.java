@@ -1,5 +1,7 @@
 package com.chitbazaar.kautilya.core;
 
+import com.chitbazaar.kautilya.domain.CashFlowInfo;
+import com.chitbazaar.kautilya.domain.MinMaxIRRAndNFV;
 import com.chitbazaar.kautilya.util.NumberUtils;
 
 import java.util.List;
@@ -10,13 +12,19 @@ public class IRRCalculator {
     private final Double increment;
     private FutureValueCalculator futureValueCalculator = new FutureValueCalculator();
     private CompoundingCalculator compoundingCalculator = new CompoundingCalculator();
+    private IRRHelper irrHelper = new IRRHelper();
 
     public IRRCalculator() {
         this(10);
     }
 
     public IRRCalculator(int precision) {
-        if (precision < 0 || precision > 10) {
+//        Somehow in java following gives different values so precision is restricted to 14
+//        double value = ((25.759135891535635 + 25.75913589153564) / 2)
+//        println value
+//        println((25.759135891535635 + 25.75913589153564) / 2)
+
+        if (precision < 0 || precision > 14) {
             throw new RuntimeException("Precision supported 0 to 10 inclusive");
         }
         this.precision = precision;
@@ -24,64 +32,41 @@ public class IRRCalculator {
     }
 
     public Double irr(List<Double> cashFlows) {
-        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFlows);
+        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFlows, precision);
         Double result = irr(cashFlowInfo);
         return NumberUtils.round(result, precision);
     }
 
     Double irr(CashFlowInfo cashFlowInfo) {
-        if (cashFlowInfo.getNetCashFlow() == 0) {
+        if (cashFlowInfo.netCashFlow == 0) {
             return 0.0d;
         }
-        if (cashFlowInfo.getNegativeCashFLow() == 0) {
+        if (cashFlowInfo.negativeCashFLow == 0) {
             return Double.POSITIVE_INFINITY;
         }
-        if (cashFlowInfo.getPositiveCashFlow() == 0) {
+        if (cashFlowInfo.positiveCashFlow == 0) {
             return -100.0d;
         }
-        if (cashFlowInfo.isOnlyEndCashFlows()) {
-            Double first = Math.abs(cashFlowInfo.getCashFlows().get(0));
-            Double last = Math.abs(cashFlowInfo.getCashFlows().get(cashFlowInfo.getCashFlows().size() - 1));
-            return compoundingCalculator.compoundRate(first, last, cashFlowInfo.getNumberOfIntervals().doubleValue());
+        if (cashFlowInfo.onlyEndCashFlows) {
+            Double first = Math.abs(cashFlowInfo.cashFlows.get(0));
+            Double last = Math.abs(cashFlowInfo.cashFlows.get(cashFlowInfo.cashFlows.size() - 1));
+            return compoundingCalculator.compoundRate(first, last, cashFlowInfo.numberOfIntervals.doubleValue());
         }
-        Double min = NumberUtils.round(cashFlowInfo.getMinReturnToCheck().ratePerInterval, precision);
-        Double max = NumberUtils.round(cashFlowInfo.getMaxReturnToCheck().ratePerInterval, precision);
-        Double mid = NumberUtils.round(((min + max) / 2), precision);
+        MinMaxIRRAndNFV minMaxIRRAndNFV = irrHelper.getInitialBounderies(cashFlowInfo);
         Double maxDiff = increment + increment;
-        Double nfvForMid;
-        Double nfvForMin;
-        Double nfvForMax;
         while (true) {
-            nfvForMid = futureValueCalculator.netFutureValue(cashFlowInfo.getCashFlows(), mid);
-            if (nfvForMid == 0) {
-                return mid;
+            if(minMaxIRRAndNFV.min.nfv == 0){
+                return minMaxIRRAndNFV.min.ratePerInterval;
             }
-            nfvForMin = futureValueCalculator.netFutureValue(cashFlowInfo.getCashFlows(), min);
-            if (nfvForMin == 0) {
-                return min;
+            if(minMaxIRRAndNFV.max.nfv == 0){
+                return minMaxIRRAndNFV.max.ratePerInterval;
             }
-            nfvForMax = futureValueCalculator.netFutureValue(cashFlowInfo.getCashFlows(), max);
-            if (nfvForMax == 0) {
-                return max;
-            }
-            if (Math.abs(max - min) <= maxDiff) {
+            if (minMaxIRRAndNFV.getIRRAbsDifference() <= maxDiff) {
                 break;
             }
-            if (nfvForMin < 0 && nfvForMid < 0) {
-                min = mid;
-            } else if (nfvForMin > 0 && nfvForMid > 0) {
-                min = mid;
-            } else if (nfvForMax < 0 && nfvForMid < 0) {
-                max = mid;
-            } else if (nfvForMax > 0 && nfvForMid > 0) {
-                max = mid;
-            }
-            mid = NumberUtils.round(((min + max) / 2), precision);
+            minMaxIRRAndNFV = irrHelper.getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, cashFlowInfo);
         }
-        TreeMap<Double, Double> nfvMap = new TreeMap<>();
-        nfvMap.put(Math.abs(nfvForMin), min);
-        nfvMap.put(Math.abs(nfvForMax), max);
-        nfvMap.put(Math.abs(nfvForMid), mid);
-        return nfvMap.firstEntry().getValue();
+        return minMaxIRRAndNFV.getIRRForLeastAbsNFV();
     }
+
 }

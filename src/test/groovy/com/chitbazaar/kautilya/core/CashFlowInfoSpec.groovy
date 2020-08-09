@@ -1,5 +1,6 @@
 package com.chitbazaar.kautilya.core
 
+import com.chitbazaar.kautilya.domain.CashFlowInfo
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -8,19 +9,18 @@ class CashFlowInfoSpec extends Specification {
         setup:
         List<Double> cashFLows = [-100d, 7d, 0d, 7d, null, 0d, -6d, 100d]
         when:
-        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFLows)
+        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFLows, 1)
         then:
         cashFlowInfo.positiveCashFlowCount == 3
         cashFlowInfo.negativeCashFlowCount == 2
         cashFlowInfo.zeroCashFlowCount == 3
         cashFlowInfo.cashFlows.size() == 8
-        cashFlowInfo.maxReturnToCheck.toString().startsWith('irr')
     }
 
     @Unroll
     def 'negative cash flow scenarios'() {
         when:
-        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFLows)
+        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFLows, 10)
         then:
         cashFlowInfo.positiveCashFlowCount == 2
         cashFlowInfo.negativeCashFlowCount == 1
