@@ -12,9 +12,9 @@
     </style>
 </head>
 <textarea id="cashFlowsInput" style="width: 100%;">-10,-10,100</textarea>
-<label>Include other check points<input type="checkbox" id="includeOtherChecksInput" checked="true"/></label>
 <button id="plotIRRToNFV">Plot IRR to NFV</button>
 <div style="color: red; width: 100%" id="error"></div>
+<div style="color: blue; width: 90%; height: 100px; overflow: auto" id="info"></div>
 <div style="width:100%;">
     <canvas id="canvas"></canvas>
 </div>
@@ -38,12 +38,7 @@
                 pointRadius: 10,
                 pointStyle: 'triangle',
                 pointBorderColor: window.chartColors.red,
-                data: [
-                    {
-                        x: 0,
-                        y: 0
-                    }
-                ]
+                data: []
             }, {
                 label: 'Other Check Points',
                 backgroundColor: window.chartColors.green,
@@ -52,12 +47,16 @@
                 pointRadius: 10,
                 pointStyle: 'star',
                 pointBorderColor: window.chartColors.green,
-                data: [
-                    {
-                        x: 0,
-                        y: 0
-                    }
-                ]
+                data: []
+            }, {
+                label: 'Final min max',
+                backgroundColor: window.chartColors.yellow,
+                borderColor: window.chartColors.yellow,
+                type: 'scatter',
+                pointRadius: 10,
+                pointStyle: 'triangle',
+                pointBorderColor: window.chartColors.yellow,
+                data: []
             }]
         },
         options: {

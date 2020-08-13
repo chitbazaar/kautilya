@@ -155,7 +155,7 @@ public class IRRHelper {
         if (slope.isInfinite()) {
             ratePerInterval = 0d;
         } else {
-            ratePerInterval = x2y2.ratePerInterval - x2y2.nfv / slope;
+            ratePerInterval = x2y2.ratePerInterval - (x2y2.nfv / slope);
         }
         Double netFutureValue = futureValueCalculator.netFutureValue(cashFlows, ratePerInterval);
         IRRAndNFV irrAndNFV = new IRRAndNFV(ratePerInterval, netFutureValue);
