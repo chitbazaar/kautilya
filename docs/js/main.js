@@ -43,7 +43,8 @@ let error = function (msg) {
 
 let info = function (msg) {
     if (msg == null) {
-        document.getElementById('info').innerText = ''
+        document.getElementById('info').innerText = '';
+        return;
     }
     document.getElementById('info').innerText = msg + '\n' + document.getElementById('info').innerText;
 }
