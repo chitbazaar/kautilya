@@ -30,7 +30,7 @@ public class IRRCalculator {
         this.defaultPrecision = precision;
     }
 
-    public Double irr(List<Double> cashFlows) {
+    public Double irr(List<Number> cashFlows) {
         CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFlows, defaultPrecision);
         Double result = irr(cashFlowInfo);
         return NumberUtils.round(result, defaultPrecision);
@@ -47,8 +47,8 @@ public class IRRCalculator {
             return -100.0d;
         }
         if (cashFlowInfo.onlyEndCashFlows) {
-            Double first = Math.abs(cashFlowInfo.cashFlows.get(0));
-            Double last = Math.abs(cashFlowInfo.cashFlows.get(cashFlowInfo.cashFlows.size() - 1));
+            Double first = Math.abs(cashFlowInfo.cashFlows.get(0).doubleValue());
+            Double last = Math.abs(cashFlowInfo.cashFlows.get(cashFlowInfo.cashFlows.size() - 1).doubleValue());
             return NumberUtils.round(compoundingCalculator.compoundRate(first, last, cashFlowInfo.numberOfIntervals.doubleValue()), cashFlowInfo.precision);
         }
         MinMaxIRRAndNFV minMaxIRRAndNFV = irrHelper.getInitialBounderies(cashFlowInfo);

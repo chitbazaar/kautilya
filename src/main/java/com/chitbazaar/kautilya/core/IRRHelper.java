@@ -41,14 +41,14 @@ public class IRRHelper {
         return getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, cashFlowInfo);
     }
 
-    private IRRAndNFV getIRRandNFV(Double principal, Double amount, Integer numberOfIntervals, List<Double> cashFlows) {
+    private IRRAndNFV getIRRandNFV(Double principal, Double amount, Integer numberOfIntervals, List<Number> cashFlows) {
         Double ratePerInterval = compoundingCalculator.compoundRate(principal, amount, numberOfIntervals.doubleValue());
         Double netFutureValue = futureValueCalculator.netFutureValue(cashFlows, ratePerInterval);
         IRRAndNFV irrAndNFV = new IRRAndNFV(ratePerInterval, netFutureValue);
         return irrAndNFV;
     }
 
-    private IRRAndNFV getIRRandNFV(Double ratePerInterval, List<Double> cashFlows) {
+    private IRRAndNFV getIRRandNFV(Double ratePerInterval, List<Number> cashFlows) {
         Double netFutureValue = futureValueCalculator.netFutureValue(cashFlows, ratePerInterval);
         IRRAndNFV irrAndNFV = new IRRAndNFV(ratePerInterval, netFutureValue);
         return irrAndNFV;
@@ -146,7 +146,7 @@ public class IRRHelper {
         }
     }
 
-    private IRRAndNFV getXAxisCut(IRRAndNFV x1y1, IRRAndNFV x2y2, List<Double> cashFlows) {
+    private IRRAndNFV getXAxisCut(IRRAndNFV x1y1, IRRAndNFV x2y2, List<Number> cashFlows) {
         Double slope = (x2y2.nfv - x1y1.nfv) / (x2y2.ratePerInterval - x1y1.ratePerInterval);
         if (slope == 0 || slope.isNaN()) {
             return null;

@@ -31,7 +31,7 @@ public class IRRPerformanceCheck {
         StringBuilder myIRRReport = new StringBuilder("===========Durga's IRR Report======\n");
         List<PerformanceInfo> myIRRPerformanceList = new ArrayList<>();
         for (double[] cashFlowsArray : inputs) {
-            List<Double> cashFlows = irrPerformanceCheck.toList(cashFlowsArray);
+            List<Number> cashFlows = irrPerformanceCheck.toList(cashFlowsArray);
             myIRRReport.append("\nCash flows: ").append(cashFlows.toString()).append("\n");
             List<PerformanceInfo> performanceInfos = irrPerformanceCheck.checkMyIRR(cashFlows);
             irrPerformanceCheck.updateReport(myIRRReport, performanceInfos);
@@ -49,15 +49,15 @@ public class IRRPerformanceCheck {
         }
     }
 
-    private List<Double> toList(double[] input) {
-        List<Double> list = new ArrayList<>();
+    private List<Number> toList(double[] input) {
+        List<Number> list = new ArrayList<>();
         for (double cashFlow : input) {
             list.add(cashFlow);
         }
         return list;
     }
 
-    List<PerformanceInfo> checkMyIRR(List<Double> cashFlows) {
+    List<PerformanceInfo> checkMyIRR(List<Number> cashFlows) {
 
         List<PerformanceInfo> infos = new ArrayList<>();
         for (int precision = 0; precision <= 14; precision += 2) {

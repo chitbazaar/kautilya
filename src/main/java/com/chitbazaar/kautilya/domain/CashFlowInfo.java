@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class CashFlowInfo {
-    public final List<Double> cashFlows;
+    public final List<Number> cashFlows;
     public final Integer positiveCashFlowCount;
     public final Integer negativeCashFlowCount;
     public final Integer zeroCashFlowCount;
@@ -19,7 +19,7 @@ public class CashFlowInfo {
     public final boolean onlyEndCashFlows;
     public final Integer precision;
 
-    public CashFlowInfo(List<Double> cashFlows, Integer precision) {
+    public CashFlowInfo(List<Number> cashFlows, Integer precision) {
         if (precision < IRRCalculator.MIN_PRECISION || precision > IRRCalculator.MAX_PRECISION) {
             throw new RuntimeException(String.format("Precision supported %s to %s inclusive", IRRCalculator.MIN_PRECISION, IRRCalculator.MAX_PRECISION));
         }
@@ -32,12 +32,13 @@ public class CashFlowInfo {
         Integer zeroCashFlowCount = 0;
         boolean onlyEndCashFlows = true;
         for (Integer index = 0; index < cashFlows.size(); index++) {
-            Double cashFlow = cashFlows.get(index);
-            if (Objects.isNull(cashFlow)) {
+            Double cashFlow = null;
+            if (Objects.isNull(cashFlows.get(index))) {
                 cashFlow = 0d;
-                cleanedUpCashFlows.add(cashFlow);
-                zeroCashFlowCount++;
-            } else if (cashFlow < 0) {
+            } else {
+                cashFlow = (cashFlows.get(index)).doubleValue();
+            }
+            if (cashFlow < 0) {
                 cleanedUpCashFlows.add(cashFlow);
                 negativeCashFlowCount++;
                 negativeCashFLow += -1 * cashFlow;
