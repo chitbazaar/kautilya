@@ -11,7 +11,11 @@ let getIRRNFVData = function () {
     let data = new Array()
     let cashFlows = getCashFlows();
     let minMax = getMinMax(cashFlows);
-    for (let i = minMax.min.irr; i <= minMax.max.irr; i++) {
+    if (minMax === null) {
+        return []
+    }
+    let increment = (minMax.max.irr - minMax.min.irr) / 200
+    for (let i = minMax.min.irr; i <= minMax.max.irr; i = i + increment) {
         data.push({'x': i, 'y': getNFV(cashFlows, i)})
     }
     return data;
@@ -33,8 +37,8 @@ let getCashFlows = function () {
     });
     return cashFlows;
 }
-let cagr = function(principal, amount, term){
-    return ((amount-principal)*100)/(principal*term);
+let cagr = function (principal, amount, term) {
+    return ((amount - principal) * 100) / (principal * term);
 }
 let getMinMax = function (cashFlows) {
     let positiveCashFlow = 0;
@@ -49,17 +53,28 @@ let getMinMax = function (cashFlows) {
     }
     let negativeRate
     let positiveRate
-    if(positiveCashFlow > negativeCashFlow){
-        negativeRate = cagr(positiveCashFlow, negativeCashFlow, 1)
-        positiveRate = cagr(negativeCashFlow, positiveCashFlow, 1)
-    }else{
-        negativeRate = cagr(negativeCashFlow, positiveCashFlow, 1)
-        positiveRate = cagr(positiveCashFlow, negativeCashFlow, 1)
+    if (positiveCashFlow == negativeCashFlow) {
+        error('Net cash flow is zero, so IRR shall be zero')
+    } else if (positiveCashFlow == 0 || negativeCashFlow == 0) {
+        error('Both positive and negative cash flows are required for IRR')
+    } else {
+        if (positiveCashFlow > negativeCashFlow) {
+            negativeRate = cagr(positiveCashFlow, negativeCashFlow, 1)
+            positiveRate = cagr(negativeCashFlow, positiveCashFlow, 1)
+        } else {
+            negativeRate = cagr(negativeCashFlow, positiveCashFlow, 1)
+            positiveRate = cagr(positiveCashFlow, negativeCashFlow, 1)
+        }
+        let min = new IRRNFV(negativeRate, getNFV(cashFlows, negativeRate))
+        let max = new IRRNFV(positiveRate, getNFV(cashFlows, positiveRate))
+        let minMax = new MinMax(min, max)
+        return minMax;
     }
-    let min = new IRRNFV(negativeRate, getNFV(cashFlows, negativeRate))
-    let max = new IRRNFV(positiveRate, getNFV(cashFlows, positiveRate))
-    let minMax = new MinMax(min, max)
-    return minMax;
+    return null;
+}
+
+let error = function (msg) {
+    document.getElementById('error').innerText = msg
 }
 
 class MinMax {

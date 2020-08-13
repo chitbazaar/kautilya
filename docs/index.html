@@ -14,7 +14,7 @@
 <body>
 <textarea id="cashFlowsInput">-10,-10,100</textarea>
 <button id="plotIRRToIRR">Plot IRR to NFV</button>
-
+<div style="color: red; width: 100%" id="error"></div>
 <div style="width:100%;">
     <canvas id="canvas"></canvas>
 </div>
@@ -49,6 +49,7 @@
     };
 
     document.getElementById('plotIRRToIRR').addEventListener('click', function () {
+        error('')
         var ctx = document.getElementById('canvas').getContext('2d');
         config.data.datasets[0].data = getIRRNFVData();
         window.myLine.update();
