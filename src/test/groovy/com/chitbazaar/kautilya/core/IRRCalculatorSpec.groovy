@@ -1,5 +1,6 @@
 package com.chitbazaar.kautilya.core
 
+import com.chitbazaar.kautilya.domain.CashFlowInfo
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -16,6 +17,8 @@ class IRRCalculatorSpec extends Specification {
     }
 
     def "Should return IRR #scenario"() {
+        setup:
+        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFlows, precision)
         when:
         Double increment = Math.pow(0.1, precision);
         Double irr = sut.irr(cashFlows)
@@ -24,8 +27,9 @@ class IRRCalculatorSpec extends Specification {
         Double nfvAfter = futureValueCalculator.netFutureValue(cashFlows, (irr + increment).round(sut.defaultPrecision)).abs()
         then:
         (nfvBefore >= nfv) && (nfv <= nfvAfter)
+        (cashFlowInfo.irrLowerLimit <= irr) && (irr <= cashFlowInfo.irrUpperLimit)
         where:
-        scenario           || cashFlows
+        scenario                || cashFlows
         'simple +ve return'     || [-100d, 112d]
         'simple +ve return - 2' || [100d, -112d]
         'simple -ve return'     || [-100d, 88d]
@@ -38,7 +42,8 @@ class IRRCalculatorSpec extends Specification {
                                     10600000d, 10600000d, 10600000d, 10600000d, 10600000d, 10600000d,
                                     19000000d, 19000000d, 19000000d, 19000000d, 19000000d,
                                     31000000d, 31000000d, 31000000d, 31000000d, 31000000d]
-        'Some big flows 2' || [100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -91965802.7616772739d]
+        'Some big flows 2'      || [100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -91965802.7616772739d]
+        'Multiple zero cuts'    || [-10, -10, 100]
     }
 
     def 'Check precision'() {

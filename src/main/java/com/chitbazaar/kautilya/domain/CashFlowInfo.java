@@ -18,6 +18,9 @@ public class CashFlowInfo {
     public final Double negativeCashFLow;
     public final boolean onlyEndCashFlows;
     public final Integer precision;
+    public final Double increment;
+    public final Double irrLowerLimit;
+    public final Double irrUpperLimit;
 
     public CashFlowInfo(List<Number> cashFlows, Integer precision) {
         if (precision < IRRCalculator.MIN_PRECISION || precision > IRRCalculator.MAX_PRECISION) {
@@ -56,6 +59,7 @@ public class CashFlowInfo {
             }
         }
         this.precision = precision;
+        this.increment = Math.pow(0.1, precision);
         this.onlyEndCashFlows = onlyEndCashFlows;
         this.cashFlows = Collections.unmodifiableList(cleanedUpCashFlows);
         this.netCashFlow = netCashFlow;
@@ -65,5 +69,14 @@ public class CashFlowInfo {
         this.positiveCashFlowCount = positiveCashFlowCount;
         this.zeroCashFlowCount = zeroCashFlowCount;
         this.numberOfIntervals = cashFlows.size() - 1;
+        if (this.positiveCashFlow == this.negativeCashFLow) {
+            this.irrLowerLimit = 0d;
+            this.irrUpperLimit = 0d;
+        } else {
+            Double biggerCashFlow = this.positiveCashFlow > this.negativeCashFLow ? this.positiveCashFlow : this.negativeCashFLow;
+            Double smallerCashFlow = this.positiveCashFlow > this.negativeCashFLow ? this.negativeCashFLow : this.positiveCashFlow;
+            this.irrLowerLimit = ((smallerCashFlow / biggerCashFlow - 1) * 100) - this.increment;
+            this.irrUpperLimit = ((biggerCashFlow / smallerCashFlow - 1) * 100) + this.increment;
+        }
     }
 }

@@ -52,7 +52,7 @@ public class IRRCalculator {
             return NumberUtils.round(compoundingCalculator.compoundRate(first, last, cashFlowInfo.numberOfIntervals.doubleValue()), cashFlowInfo.precision);
         }
         MinMaxIRRAndNFV minMaxIRRAndNFV = irrHelper.getInitialBounderies(cashFlowInfo);
-        Double increment = Math.pow(0.1, cashFlowInfo.precision);
+        Double increment = cashFlowInfo.increment;
         Double maxDiff = increment + increment;
         while (true) {
             if (minMaxIRRAndNFV.min.nfv == 0) {

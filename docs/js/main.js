@@ -143,10 +143,12 @@ class CashFlowInfo {
 
     updateIrrsWithNFVs(data) {
         data.forEach(xy => {
-                if (xy.y >= 0) {
-                    this._irrsWithPositiveNFV.push(new IRRNFV(xy.x, xy.y))
-                } else {
-                    this._irrsWithNegativeNFV.push(new IRRNFV(xy.x, xy.y))
+                if (this._initialMinMax != null && (xy.x > this._initialMinMax.min.irr && xy.x < this._initialMinMax.max.irr)) {
+                    if (xy.y >= 0) {
+                        this._irrsWithPositiveNFV.push(new IRRNFV(xy.x, xy.y))
+                    } else {
+                        this._irrsWithNegativeNFV.push(new IRRNFV(xy.x, xy.y))
+                    }
                 }
             }
         );

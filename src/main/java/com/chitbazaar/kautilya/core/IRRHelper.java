@@ -19,23 +19,21 @@ public class IRRHelper {
         IRRAndNFV irrAndNFV = null;
         //near intervals
         irrAndNFV = getIRRandNFV(cashFlowInfo.negativeCashFLow, cashFlowInfo.positiveCashFlow, 1, cashFlowInfo.cashFlows);
-        setNFVAndReturn(irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         irrAndNFV = getIRRandNFV(cashFlowInfo.positiveCashFlow, cashFlowInfo.negativeCashFLow, 1, cashFlowInfo.cashFlows);
-        setNFVAndReturn(irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         //far intervals
         irrAndNFV = getIRRandNFV(cashFlowInfo.negativeCashFLow, cashFlowInfo.positiveCashFlow, cashFlowInfo.numberOfIntervals, cashFlowInfo.cashFlows);
-        setNFVAndReturn(irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         irrAndNFV = getIRRandNFV(cashFlowInfo.positiveCashFlow, cashFlowInfo.negativeCashFLow, cashFlowInfo.numberOfIntervals, cashFlowInfo.cashFlows);
-        setNFVAndReturn(irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
-
-        minMaxIRRAndNFV = getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         //zero irr
         irrAndNFV = getIRRandNFV(0.0, cashFlowInfo.cashFlows);
-        setNFVAndReturn(irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
         minMaxIRRAndNFV = getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         return getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, cashFlowInfo);
@@ -57,14 +55,14 @@ public class IRRHelper {
     public MinMaxIRRAndNFV getNewMinMaxIRRAndNFV(MinMaxIRRAndNFV minMaxIRRAndNFV, CashFlowInfo cashFlowInfo) {
         Set<IRRAndNFV> positiveNFVToReturnSet = new TreeSet<>();
         Set<IRRAndNFV> negativeNFVToReturnSet = new TreeSet<>();
-        setNFVAndReturn(minMaxIRRAndNFV.min, positiveNFVToReturnSet, negativeNFVToReturnSet);
-        setNFVAndReturn(minMaxIRRAndNFV.max, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, minMaxIRRAndNFV.min, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, minMaxIRRAndNFV.max, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         MinMaxIRRAndNFV newMinMaxIRRAndNFV = null;
 
         //x axis cut
         IRRAndNFV xAxisCut = getXAxisCut(minMaxIRRAndNFV.min, minMaxIRRAndNFV.max, cashFlowInfo.cashFlows);
-        setNFVAndReturn(xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
         newMinMaxIRRAndNFV = getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         //Min tangential cut
@@ -78,7 +76,7 @@ public class IRRHelper {
         //Mid tangential cut
         Double midRate = (newMinMaxIRRAndNFV.min.ratePerInterval + newMinMaxIRRAndNFV.max.ratePerInterval) / 2d;
         IRRAndNFV mid = new IRRAndNFV(midRate, futureValueCalculator.netFutureValue(cashFlowInfo.cashFlows, midRate));
-        setNFVAndReturn(mid, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, mid, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
         setTangentialCuts(mid, cashFlowInfo, positiveNFVToReturnSet, negativeNFVToReturnSet);
         newMinMaxIRRAndNFV = getNewMinMaxIRRAndNFV(newMinMaxIRRAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
@@ -93,15 +91,19 @@ public class IRRHelper {
         IRRAndNFV nPlusOne = new IRRAndNFV(nPlusOnePrecision, futureValueCalculator.netFutureValue(cashFlowInfo.cashFlows, nPlusOnePrecision));
         IRRAndNFV xAxisCut = null;
         xAxisCut = getXAxisCut(nMinusOne, nPlusOne, cashFlowInfo.cashFlows);
-        setNFVAndReturn(xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
         xAxisCut = getXAxisCut(n, nPlusOne, cashFlowInfo.cashFlows);
-        setNFVAndReturn(xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
         xAxisCut = getXAxisCut(nMinusOne, n, cashFlowInfo.cashFlows);
-        setNFVAndReturn(xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        setNFVAndReturn(cashFlowInfo, xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
     }
 
-    public void setNFVAndReturn(IRRAndNFV irrAndNFV, Set<IRRAndNFV> positiveNFVToReturnSet, Set<IRRAndNFV> negativeNFVToReturnSet) {
+    public void setNFVAndReturn(CashFlowInfo cashFlowInfo, IRRAndNFV irrAndNFV, Set<IRRAndNFV> positiveNFVToReturnSet, Set<IRRAndNFV> negativeNFVToReturnSet) {
         if (Objects.isNull(irrAndNFV) || irrAndNFV.nfv.isNaN() || irrAndNFV.ratePerInterval.isNaN()) {
+            return;
+        }
+        //Check for initial boundaries and ignore if going out of boundary
+        if (irrAndNFV.ratePerInterval < cashFlowInfo.irrLowerLimit || irrAndNFV.ratePerInterval > cashFlowInfo.irrUpperLimit) {
             return;
         }
         if (irrAndNFV.nfv > 0) {
