@@ -13,7 +13,6 @@ let getCheckPointData = function () {
     let data = new Array()
 
     data.push({'x': 0, 'y': getNFV(cashFlows, 0)});
-    data.push({'x': -100, 'y': getNFV(cashFlows, -100)});
 
     let positiveCashFlow = 0;
     let negativeCashFlow = 0;
@@ -48,7 +47,9 @@ let getIRRNFVData = function () {
         return []
     }
     let increment = (minMax.max.irr - minMax.min.irr) / 200
-    for (let i = minMax.min.irr; i <= minMax.max.irr; i = i + increment) {
+    let from = minMax.min.irr - increment
+    let to = minMax.max.irr + increment
+    for (let i = from; i <= to; i = i + increment) {
         data.push({'x': i, 'y': getNFV(cashFlows, i)})
     }
     return data;
