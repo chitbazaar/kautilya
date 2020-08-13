@@ -136,6 +136,9 @@ class CashFlowInfo {
 
     get currentMinMaxData() {
         let data = new Array();
+        if (this._currentMinMax == undefined) {
+            return data;
+        }
         data.push({'x': this._currentMinMax.min.irr, 'y': this._currentMinMax.min.nfv});
         data.push({'x': this._currentMinMax.max.irr, 'y': this._currentMinMax.max.nfv});
         return data
@@ -143,7 +146,7 @@ class CashFlowInfo {
 
     updateIrrsWithNFVs(data) {
         data.forEach(xy => {
-                if (this._initialMinMax != null && (xy.x > this._initialMinMax.min.irr && xy.x < this._initialMinMax.max.irr)) {
+                if (this._initialMinMax != null && (xy.x >= this._initialMinMax.min.irr && xy.x <= this._initialMinMax.max.irr)) {
                     if (xy.y >= 0) {
                         this._irrsWithPositiveNFV.push(new IRRNFV(xy.x, xy.y))
                     } else {
@@ -186,6 +189,10 @@ class CashFlowInfo {
 
     get otherCheckPointData() {
         let data = new Array();
+        if (this._initialMinMax.min.nfv == 0 || this._initialMinMax.max.nfv == 0) {
+            info('No additional check points required. NFV is zero for either min or max');
+            return data;
+        }
         let cashFlows = this._cashFlows;
         let positiveCashFlow = this._totalPositiveCashFlow;
         let negativeCashFlow = this._totalNegativeCashFlow;
