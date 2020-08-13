@@ -24,13 +24,26 @@
         data: {
             datasets: [{
                 label: '~IRR vs NFV',
-                display: false,
                 backgroundColor: window.chartColors.blue,
                 borderColor: window.chartColors.blue,
-                borderWidth:1,
-                pointRadius:0,
+                borderWidth: 1,
+                pointRadius: 0,
                 fill: false,
                 data: []
+            }, {
+                label: 'Check Points',
+                backgroundColor: window.chartColors.green,
+                borderColor: window.chartColors.green,
+                type: 'scatter',
+                pointRadius: 10,
+                pointStyle: 'triangle',
+                pointBorderColor: window.chartColors.green,
+                data: [
+                    {
+                        x: 0,
+                        y: 0
+                    }
+                ]
             }]
         },
         options: {
@@ -47,6 +60,7 @@
     window.onload = function () {
         var ctx = document.getElementById('canvas').getContext('2d');
         config.data.datasets[0].data = getIRRNFVData();
+        config.data.datasets[1].data = getCheckPointData();
         window.myLine = new Chart(ctx, config);
     };
 
@@ -54,6 +68,7 @@
         error('')
         var ctx = document.getElementById('canvas').getContext('2d');
         config.data.datasets[0].data = getIRRNFVData();
+        config.data.datasets[1].data = getCheckPointData();
         window.myLine.update();
     });
 

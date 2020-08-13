@@ -7,6 +7,39 @@ window.chartColors = {
     purple: 'rgb(153, 102, 255)',
     grey: 'rgb(201, 203, 207)'
 };
+
+let getCheckPointData = function () {
+    let cashFlows = getCashFlows();
+    let data = new Array()
+
+    data.push({'x': 0, 'y': getNFV(cashFlows, 0)});
+    data.push({'x': -100, 'y': getNFV(cashFlows, -100)});
+
+    let positiveCashFlow = 0;
+    let negativeCashFlow = 0;
+    for (let i = 0; i < cashFlows.length; i++) {
+        let cashFlow = cashFlows[i];
+        if (cashFlow > 0) {
+            positiveCashFlow += cashFlow;
+        } else {
+            negativeCashFlow += -1 * cashFlow;
+        }
+    }
+    if (positiveCashFlow > 0 && negativeCashFlow > 0) {
+        let numberOfIntervals = cashFlows.length - 1
+        let rate = cagr(positiveCashFlow, negativeCashFlow, 1)
+        data.push({'x': rate, 'y': getNFV(cashFlows, rate)})
+        rate = cagr(negativeCashFlow, positiveCashFlow, 1)
+        data.push({'x': rate, 'y': getNFV(cashFlows, rate)})
+        rate = cagr(positiveCashFlow, negativeCashFlow, numberOfIntervals)
+        data.push({'x': rate, 'y': getNFV(cashFlows, rate)})
+        rate = cagr(negativeCashFlow, positiveCashFlow, numberOfIntervals)
+        data.push({'x': rate, 'y': getNFV(cashFlows, rate)})
+    }
+
+    return data
+};
+
 let getIRRNFVData = function () {
     let data = new Array()
     let cashFlows = getCashFlows();
