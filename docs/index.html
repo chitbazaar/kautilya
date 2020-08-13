@@ -11,15 +11,15 @@
         }
     </style>
 </head>
-<body>
-<textarea id="cashFlowsInput">-10,-10,100</textarea>
-<button id="plotIRRToIRR">Plot IRR to NFV</button>
+<textarea id="cashFlowsInput" style="width: 100%;">-10,-10,100</textarea>
+<label>Include other check points<input type="checkbox" id="includeOtherChecksInput" checked="true"/></label>
+<button id="plotIRRToNFV">Plot IRR to NFV</button>
 <div style="color: red; width: 100%" id="error"></div>
 <div style="width:100%;">
     <canvas id="canvas"></canvas>
 </div>
 <script>
-    var config = {
+    let config = {
         type: 'line',
         data: {
             datasets: [{
@@ -31,12 +31,26 @@
                 fill: false,
                 data: []
             }, {
-                label: 'Check Points',
+                label: 'Min Max Check Points',
+                backgroundColor: window.chartColors.red,
+                borderColor: window.chartColors.red,
+                type: 'scatter',
+                pointRadius: 10,
+                pointStyle: 'triangle',
+                pointBorderColor: window.chartColors.red,
+                data: [
+                    {
+                        x: 0,
+                        y: 0
+                    }
+                ]
+            }, {
+                label: 'Other Check Points',
                 backgroundColor: window.chartColors.green,
                 borderColor: window.chartColors.green,
                 type: 'scatter',
                 pointRadius: 10,
-                pointStyle: 'triangle',
+                pointStyle: 'star',
                 pointBorderColor: window.chartColors.green,
                 data: [
                     {
@@ -58,17 +72,14 @@
     };
 
     window.onload = function () {
-        var ctx = document.getElementById('canvas').getContext('2d');
-        config.data.datasets[0].data = getIRRNFVData();
-        config.data.datasets[1].data = getCheckPointData();
+        let ctx = document.getElementById('canvas').getContext('2d');
+        updateDataConfig();
         window.myLine = new Chart(ctx, config);
     };
 
-    document.getElementById('plotIRRToIRR').addEventListener('click', function () {
+    document.getElementById('plotIRRToNFV').addEventListener('click', function () {
         error('')
-        var ctx = document.getElementById('canvas').getContext('2d');
-        config.data.datasets[0].data = getIRRNFVData();
-        config.data.datasets[1].data = getCheckPointData();
+        updateDataConfig();
         window.myLine.update();
     });
 
