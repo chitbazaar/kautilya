@@ -14,6 +14,7 @@ let updateDataConfig = function () {
     config.data.datasets[1].data = cashFlowInfo.initialMinMaxData;
     config.data.datasets[2].data = cashFlowInfo.otherCheckPointData;
     config.data.datasets[3].data = cashFlowInfo.currentMinMaxData;
+    config.data.datasets[4].data = cashFlowInfo.irrData;
 };
 
 let getNFV = function (cashFlows, r) {
@@ -107,6 +108,7 @@ class CashFlowInfo {
             let max = new IRRNFV(positiveRate, getNFV(this._cashFlows, positiveRate))
             let minMax = new MinMax(min, max)
             this._initialMinMax = minMax;
+            this._currentMinMax = minMax;
             info(`Initial Min Max:: min:${this._initialMinMax.min.irr} max:${this._initialMinMax.max.irr}`);
         }
     }
@@ -147,7 +149,7 @@ class CashFlowInfo {
 
     updateIrrsWithNFVs(data) {
         data.forEach(xy => {
-                if (this._initialMinMax != null && (xy.x >= this._initialMinMax.min.irr && xy.x <= this._initialMinMax.max.irr)) {
+                if (this._initialMinMax != null && (xy.x >= this._currentMinMax.min.irr && xy.x <= this._currentMinMax.max.irr)) {
                     if (xy.y >= 0) {
                         this._irrsWithPositiveNFV.push(new IRRNFV(xy.x, xy.y))
                     } else {
@@ -186,6 +188,89 @@ class CashFlowInfo {
             }
         );
         return new MinMax(min, max);
+    }
+
+    get irrData() {
+        let data = new Array();
+        if (this._irr == undefined) {
+            let increment = Math.pow(0.1, this._precision);
+            if (this._currentMinMax.min.nfv == 0) {
+                this._irr = this._currentMinMax.min;
+            } else if (this._currentMinMax.max.nfv == 0) {
+                this._irr = this._currentMinMax.min;
+            } else {
+                while ((this._currentMinMax.max.irr - this._currentMinMax.min.irr) > increment) {
+                    this.setNewMinMax();
+                    if (this._currentMinMax.min.nfv == 0 || this._currentMinMax.max.nfv == 0) {
+                        break;
+                    }
+                }
+                if (Math.abs(this._currentMinMax.min.nfv) < Math.abs(this._currentMinMax.max.nfv)) {
+                    this._irr = this._currentMinMax.min;
+                } else {
+                    this._irr = this._currentMinMax.max;
+                }
+            }
+            info(`***** irr: ${this._irr.irr} ***`);
+        }
+        data.push({'x': this._irr.irr, 'y': this._irr.nfv})
+        return data;
+    }
+
+    setNewMinMax() {
+        let data = new Array();
+        if (this._currentMinMax.min.nfv == 0 || this._currentMinMax.max.nfv == 0) {
+            info('No additional check points required. NFV is zero for either min or max');
+            return data
+        }
+
+        this._irrsWithNegativeNFV = new Array();
+        this._irrsWithPositiveNFV = new Array();
+        this.updateIrrsWithNFVs(this.currentMinMaxData);
+
+        let cashFlows = this._cashFlows;
+        let positiveCashFlow = this._totalPositiveCashFlow;
+        let negativeCashFlow = this._totalNegativeCashFlow;
+        let numberOfIntervals = this.numberOfIntervals;
+        let rate = null;
+        let point = {};
+
+        //Middle
+        let middle = (this._currentMinMax.min.irr + this._currentMinMax.max.irr) / 2;
+        let nfvForMiddle = getNFV(cashFlows, middle)
+        point = {'x': middle, 'y': nfvForMiddle}
+        data.push(point)
+
+        //X axis cut
+        let xCut = xAxisCut(this._currentMinMax.min, this._currentMinMax.max, cashFlows);
+        if (xCut != null) {
+            let nfvForXCut = getNFV(cashFlows, xCut.irr);
+            point = {'x': xCut.irr, 'y': nfvForXCut}
+            data.push(point);
+        }
+        //Min tangential cut
+        let nMinusOne = new IRRNFV(this._currentMinMax.min.irr - this._precision, getNFV(cashFlows, this._currentMinMax.min.irr - this._precision))
+        let nPlusOne = new IRRNFV(this._currentMinMax.min.irr + this._precision, getNFV(cashFlows, this._currentMinMax.min.irr + this._precision))
+        xCut = xAxisCut(nMinusOne, nPlusOne, cashFlows);
+        if (xCut != null) {
+            let nfvForXCut = getNFV(cashFlows, xCut.irr);
+            point = {'x': xCut.irr, 'y': nfvForXCut}
+            data.push(point);
+        }
+
+        //Max tangential cut
+        nMinusOne = new IRRNFV(this._currentMinMax.max.irr - this._precision, getNFV(cashFlows, this._currentMinMax.max.irr - this._precision))
+        nPlusOne = new IRRNFV(this._currentMinMax.max.irr + this._precision, getNFV(cashFlows, this._currentMinMax.max.irr + this._precision))
+        xCut = xAxisCut(nMinusOne, nPlusOne, cashFlows);
+        if (xCut != null) {
+            let nfvForXCut = getNFV(cashFlows, xCut.irr);
+            point = {'x': xCut.irr, 'y': nfvForXCut}
+            data.push(point);
+        }
+
+        this.updateIrrsWithNFVs(data);
+        this.setCurrentMinMax();
+        return data;
     }
 
     get otherCheckPointData() {

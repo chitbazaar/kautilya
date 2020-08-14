@@ -41,12 +41,12 @@
                 data: []
             }, {
                 label: 'Other Check Points',
-                backgroundColor: window.chartColors.green,
-                borderColor: window.chartColors.green,
+                backgroundColor: window.chartColors.orange,
+                borderColor: window.chartColors.orange,
                 type: 'scatter',
                 pointRadius: 10,
                 pointStyle: 'star',
-                pointBorderColor: window.chartColors.green,
+                pointBorderColor: window.chartColors.orange,
                 data: []
             }, {
                 label: 'Final min max',
@@ -57,7 +57,17 @@
                 pointStyle: 'triangle',
                 pointBorderColor: window.chartColors.yellow,
                 data: []
-            }]
+            }, {
+                label: 'IRR',
+                backgroundColor: window.chartColors.green,
+                borderColor: window.chartColors.green,
+                type: 'scatter',
+                pointRadius: 15,
+                pointStyle: 'rectRot',
+                pointBorderColor: window.chartColors.green,
+                data: []
+            }
+            ]
         },
         options: {
             responsive: true,
