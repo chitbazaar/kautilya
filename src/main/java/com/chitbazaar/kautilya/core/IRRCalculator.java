@@ -8,7 +8,7 @@ import java.util.List;
 
 public class IRRCalculator {
     public static final Integer MIN_PRECISION = 0;
-    public static final Integer MAX_PRECISION = 14;
+    public static final Integer MAX_PRECISION = 13;
     private final int defaultPrecision;
     private FutureValueCalculator futureValueCalculator = new FutureValueCalculator();
     private CompoundingCalculator compoundingCalculator = new CompoundingCalculator();
@@ -19,7 +19,7 @@ public class IRRCalculator {
     }
 
     public IRRCalculator(int precision) {
-//        Somehow in java following gives different values so precision is restricted to 14
+//        Somehow in java following gives different values so precision is restricted to 13
 //        double value = ((25.759135891535635 + 25.75913589153564) / 2)
 //        println value
 //        println((25.759135891535635 + 25.75913589153564) / 2)
@@ -65,11 +65,16 @@ public class IRRCalculator {
                 throw new RuntimeException("Unexpected NAN");
             }
 //            System.out.printf("min:%s\tmax:%s\n", minMaxIRRAndNFV.min.ratePerInterval, minMaxIRRAndNFV.max.ratePerInterval);
+            minMaxIRRAndNFV = irrHelper.setAndGetNewMinMaxIRRAndNFV(minMaxIRRAndNFV, cashFlowInfo);
             if (minMaxIRRAndNFV.getIRRAbsDifference() <= maxDiff) {
                 break;
             }
-            minMaxIRRAndNFV = irrHelper.getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, cashFlowInfo);
         }
+        Double closeIRR = minMaxIRRAndNFV.getIRRForLeastAbsNFV();
+        Double floorIRR = NumberUtils.floor(closeIRR, cashFlowInfo.precision);
+
+        Double ceilIRR = NumberUtils.floor(closeIRR, cashFlowInfo.precision);
+
         return NumberUtils.round(minMaxIRRAndNFV.getIRRForLeastAbsNFV(), cashFlowInfo.precision);
     }
 

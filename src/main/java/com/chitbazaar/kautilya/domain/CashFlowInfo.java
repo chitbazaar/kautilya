@@ -21,6 +21,7 @@ public class CashFlowInfo {
     public final Double increment;
     public final Double irrLowerLimit;
     public final Double irrUpperLimit;
+    public MinMaxIRRAndNFV currentMinMax;
 
     public CashFlowInfo(List<Number> cashFlows, Integer precision) {
         if (precision < IRRCalculator.MIN_PRECISION || precision > IRRCalculator.MAX_PRECISION) {
@@ -44,7 +45,7 @@ public class CashFlowInfo {
             if (cashFlow < 0) {
                 cleanedUpCashFlows.add(cashFlow);
                 negativeCashFlowCount++;
-                negativeCashFLow += -1 * cashFlow;
+                negativeCashFLow +=  cashFlow;
             } else if (cashFlow > 0) {
                 cleanedUpCashFlows.add(cashFlow);
                 positiveCashFlowCount++;
@@ -78,5 +79,13 @@ public class CashFlowInfo {
             this.irrLowerLimit = ((smallerCashFlow / biggerCashFlow - 1) * 100) - this.increment;
             this.irrUpperLimit = ((biggerCashFlow / smallerCashFlow - 1) * 100) + this.increment;
         }
+    }
+
+    public MinMaxIRRAndNFV getCurrentMinMax() {
+        return currentMinMax;
+    }
+
+    public void setCurrentMinMax(MinMaxIRRAndNFV currentMinMax) {
+        this.currentMinMax = currentMinMax;
     }
 }
