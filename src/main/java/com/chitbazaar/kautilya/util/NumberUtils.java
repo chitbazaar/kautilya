@@ -21,4 +21,8 @@ public class NumberUtils {
         }
         return (Math.floor(value * Math.pow(10, precision)) / Math.pow(10, precision));
     }
+
+    public static Double log2(Double n) {
+        return (Math.log(n) / Math.log(2));
+    }
 }

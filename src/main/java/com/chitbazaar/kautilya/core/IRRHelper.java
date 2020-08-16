@@ -12,7 +12,7 @@ public class IRRHelper {
     private final CompoundingCalculator compoundingCalculator = new CompoundingCalculator();
 
     public MinMaxIRRAndNFV getInitialBounderies(CashFlowInfo cashFlowInfo) {
-        MinMaxIRRAndNFV minMaxIRRAndNFV = new MinMaxIRRAndNFV();
+        MinMaxIRRAndNFV minMaxIRRAndNFV = null;
         Set<IRRAndNFV> positiveNFVToReturnSet = new TreeSet<>();
         Set<IRRAndNFV> negativeNFVToReturnSet = new TreeSet<>();
 
@@ -24,6 +24,13 @@ public class IRRHelper {
         irrAndNFV = getIRRandNFV(cashFlowInfo.positiveCashFlow, cashFlowInfo.negativeCashFLow, 1, cashFlowInfo.cashFlows);
         setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
+        if (positiveNFVToReturnSet.size() > 0 && negativeNFVToReturnSet.size() > 0) {
+            minMaxIRRAndNFV = getNewMinMaxIRRAndNFV(null, positiveNFVToReturnSet, negativeNFVToReturnSet);
+            if (minMaxIRRAndNFV != null) {
+                cashFlowInfo.setCurrentMinMax(minMaxIRRAndNFV);
+            }
+        }
+
         //far intervals
         irrAndNFV = getIRRandNFV(cashFlowInfo.negativeCashFLow, cashFlowInfo.positiveCashFlow, cashFlowInfo.numberOfIntervals, cashFlowInfo.cashFlows);
         setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
@@ -31,12 +38,36 @@ public class IRRHelper {
         irrAndNFV = getIRRandNFV(cashFlowInfo.positiveCashFlow, cashFlowInfo.negativeCashFLow, cashFlowInfo.numberOfIntervals, cashFlowInfo.cashFlows);
         setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
+        if (positiveNFVToReturnSet.size() > 0 && negativeNFVToReturnSet.size() > 0) {
+            minMaxIRRAndNFV = getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
+            if (minMaxIRRAndNFV != null) {
+                cashFlowInfo.setCurrentMinMax(minMaxIRRAndNFV);
+            }
+        } else {
+            tryOtherInitialCheckPoints(cashFlowInfo, positiveNFVToReturnSet, negativeNFVToReturnSet);
+            if (positiveNFVToReturnSet.size() == 0 || negativeNFVToReturnSet.size() == 0) {
+                throw new IRRException("Cannot determine minmax boundaries for cashFlows.");
+            } else {
+                minMaxIRRAndNFV = getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
+                if (minMaxIRRAndNFV != null) {
+                    cashFlowInfo.setCurrentMinMax(minMaxIRRAndNFV);
+                }
+            }
+        }
+
+        return setAndGetNewMinMaxIRRAndNFV(minMaxIRRAndNFV, cashFlowInfo);
+    }
+
+    private void tryOtherInitialCheckPoints(CashFlowInfo cashFlowInfo, Set<IRRAndNFV> positiveNFVToReturnSet, Set<IRRAndNFV> negativeNFVToReturnSet) {
+        IRRAndNFV irrAndNFV;
         //zero irr
         irrAndNFV = getIRRandNFV(0.0, cashFlowInfo.cashFlows);
         setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
-        minMaxIRRAndNFV = getNewMinMaxIRRAndNFV(minMaxIRRAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
 
-        return setAndGetNewMinMaxIRRAndNFV(minMaxIRRAndNFV, cashFlowInfo);
+        irrAndNFV = getIRRandNFV(-1 * cashFlowInfo.negativeCashFLow, cashFlowInfo.positiveCashFlow, 1, cashFlowInfo.cashFlows);
+        setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
+        irrAndNFV = getIRRandNFV(cashFlowInfo.positiveCashFlow, -1 * cashFlowInfo.negativeCashFLow, 1, cashFlowInfo.cashFlows);
+        setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
     }
 
     public IRRAndNFV getIRRandNFV(Double principal, Double amount, Integer numberOfIntervals, List<Number> cashFlows) {
@@ -103,36 +134,52 @@ public class IRRHelper {
         if (Objects.isNull(irrAndNFV) || irrAndNFV.nfv.isNaN() || irrAndNFV.ratePerInterval.isNaN()) {
             return;
         }
-        //Check for current or initial boundaries and ignore if going out of boundary
+        if (irrAndNFV.nfv == 0) {
+            cashFlowInfo.setCurrentMinMax(new MinMaxIRRAndNFV(irrAndNFV, irrAndNFV));
+            positiveNFVToReturnSet.add(irrAndNFV);
+            negativeNFVToReturnSet.add(irrAndNFV);
+            return;
+        }
+
+        //Check for current boundaries and ignore if going out of boundary
         MinMaxIRRAndNFV currentMinMax = cashFlowInfo.getCurrentMinMax();
-        if (Objects.nonNull(currentMinMax) && (currentMinMax.min.ratePerInterval < cashFlowInfo.irrLowerLimit || currentMinMax.max.ratePerInterval > cashFlowInfo.irrUpperLimit)) {
+        if (Objects.nonNull(currentMinMax) && Objects.nonNull(currentMinMax.max) && Objects.nonNull(currentMinMax.min)
+                && (irrAndNFV.ratePerInterval < currentMinMax.min.ratePerInterval || irrAndNFV.ratePerInterval > currentMinMax.max.ratePerInterval)
+        ) {
             return;
         }
-        if (irrAndNFV.ratePerInterval < cashFlowInfo.irrLowerLimit || irrAndNFV.ratePerInterval > cashFlowInfo.irrUpperLimit) {
-            return;
-        }
+
         if (irrAndNFV.nfv > 0) {
             positiveNFVToReturnSet.add(irrAndNFV);
         } else {
             negativeNFVToReturnSet.add(irrAndNFV);
         }
+
     }
 
+    //check whether both numbers are both positive or both negative
+    private boolean areSameSign(Number n1, Number n2) {
+        return (n1.doubleValue() > 0 && n2.doubleValue() > 0) || (n1.doubleValue() < 0 && n2.doubleValue() < 0) || (n1.doubleValue() == 0 && n2.doubleValue() == 0);
+    }
 
     public MinMaxIRRAndNFV getNewMinMaxIRRAndNFV(MinMaxIRRAndNFV minMaxIRRAndNFV, Set<IRRAndNFV> positiveNFVToReturnSet, Set<IRRAndNFV> negativeNFVToReturnSet) {
+        if (positiveNFVToReturnSet.size() == 0 || negativeNFVToReturnSet.size() == 0) {
+            throw new IRRException("Both positive and negative cash flows are required to determine min max boundaries");
+        }
         IRRAndNFV positiveMin = Collections.min(positiveNFVToReturnSet);
         IRRAndNFV positiveMax = Collections.max(positiveNFVToReturnSet);
         IRRAndNFV negativeMin = Collections.min(negativeNFVToReturnSet);
         IRRAndNFV negativeMax = Collections.max(negativeNFVToReturnSet);
 
-        MinMaxIRRAndNFV newMinMaxIRRAndNFV = null;
-
-        if (minMaxIRRAndNFV.max == null) {
-            newMinMaxIRRAndNFV = new MinMaxIRRAndNFV(min(positiveMin, negativeMin), max(positiveMax, negativeMax));
-        } else if (minMaxIRRAndNFV.max.nfv >= 0) {
-            newMinMaxIRRAndNFV = new MinMaxIRRAndNFV(min(negativeMax, positiveMin), max(negativeMax, positiveMin));
+        MinMaxIRRAndNFV givenMinMaxIRRAndNFV = minMaxIRRAndNFV;
+        MinMaxIRRAndNFV newMinMaxIRRAndNFV;
+        if (givenMinMaxIRRAndNFV == null) {
+            givenMinMaxIRRAndNFV = new MinMaxIRRAndNFV(min(positiveMin, negativeMin), max(positiveMax, negativeMax));
+        }
+        if (givenMinMaxIRRAndNFV.max.nfv >= 0) {
+            newMinMaxIRRAndNFV = new MinMaxIRRAndNFV(negativeMax, positiveMin);
         } else {
-            newMinMaxIRRAndNFV = new MinMaxIRRAndNFV(min(negativeMin, positiveMax), max(negativeMin, positiveMax));
+            newMinMaxIRRAndNFV = new MinMaxIRRAndNFV(positiveMax, negativeMin);
         }
         return newMinMaxIRRAndNFV;
     }

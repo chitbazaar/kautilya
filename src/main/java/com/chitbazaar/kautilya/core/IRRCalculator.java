@@ -1,6 +1,7 @@
 package com.chitbazaar.kautilya.core;
 
 import com.chitbazaar.kautilya.domain.CashFlowInfo;
+import com.chitbazaar.kautilya.domain.IRRAndNFV;
 import com.chitbazaar.kautilya.domain.MinMaxIRRAndNFV;
 import com.chitbazaar.kautilya.util.NumberUtils;
 
@@ -25,7 +26,7 @@ public class IRRCalculator {
 //        println((25.759135891535635 + 25.75913589153564) / 2)
 
         if (precision < MIN_PRECISION || precision > MAX_PRECISION) {
-            throw new RuntimeException(String.format("Precision supported %s to %s inclusive", MIN_PRECISION, MAX_PRECISION));
+            throw new IRRException(String.format("Precision supported %s to %s inclusive", MIN_PRECISION, MAX_PRECISION));
         }
         this.defaultPrecision = precision;
     }
@@ -54,6 +55,8 @@ public class IRRCalculator {
         MinMaxIRRAndNFV minMaxIRRAndNFV = irrHelper.getInitialBounderies(cashFlowInfo);
         Double increment = cashFlowInfo.increment;
         Double maxDiff = increment + increment;
+        Double maxIterations = NumberUtils.log2((minMaxIRRAndNFV.max.ratePerInterval - minMaxIRRAndNFV.min.ratePerInterval) / increment) + 1;
+        Double count = 0d;
         while (true) {
             if (minMaxIRRAndNFV.min.nfv == 0) {
                 return minMaxIRRAndNFV.min.ratePerInterval;
@@ -62,19 +65,24 @@ public class IRRCalculator {
                 return minMaxIRRAndNFV.max.ratePerInterval;
             }
             if (minMaxIRRAndNFV.min.ratePerInterval.isNaN() || minMaxIRRAndNFV.max.ratePerInterval.isNaN()) {
-                throw new RuntimeException("Unexpected NAN");
+                throw new IRRException("Unexpected NAN");
             }
 //            System.out.printf("min:%s\tmax:%s\n", minMaxIRRAndNFV.min.ratePerInterval, minMaxIRRAndNFV.max.ratePerInterval);
             minMaxIRRAndNFV = irrHelper.setAndGetNewMinMaxIRRAndNFV(minMaxIRRAndNFV, cashFlowInfo);
             if (minMaxIRRAndNFV.getIRRAbsDifference() <= maxDiff) {
                 break;
             }
+            if (count > maxIterations) {
+                throw new IRRException("Something unexpected.. could not find IRR.");
+            }
+            count++;
         }
         Double closeIRR = minMaxIRRAndNFV.getIRRForLeastAbsNFV();
         Double floorIRR = NumberUtils.floor(closeIRR, cashFlowInfo.precision);
-
-        Double ceilIRR = NumberUtils.floor(closeIRR, cashFlowInfo.precision);
-
+        Double nfvForFloorIRR = futureValueCalculator.netFutureValue(cashFlowInfo.cashFlows, floorIRR);
+        Double ceilIRR = NumberUtils.ceil(closeIRR, cashFlowInfo.precision);
+        Double nfvForCeilIRR = futureValueCalculator.netFutureValue(cashFlowInfo.cashFlows, ceilIRR);
+        minMaxIRRAndNFV = new MinMaxIRRAndNFV(new IRRAndNFV(floorIRR, nfvForFloorIRR), new IRRAndNFV(ceilIRR, nfvForCeilIRR));
         return NumberUtils.round(minMaxIRRAndNFV.getIRRForLeastAbsNFV(), cashFlowInfo.precision);
     }
 

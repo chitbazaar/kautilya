@@ -106,11 +106,56 @@ class CashFlowInfo {
             }
             let min = new IRRNFV(negativeRate, getNFV(this._cashFlows, negativeRate))
             let max = new IRRNFV(positiveRate, getNFV(this._cashFlows, positiveRate))
-            let minMax = new MinMax(min, max)
+            let newPoint = null
+            if (min.nfv > 0 && max.nfv > 0) {
+                newPoint = this.tryToGetPointCheck(false);
+            } else if (min.nfv < 0 && max.nfv < 0) {
+                newPoint = this.tryToGetPointCheck(true);
+            }
+            if (newPoint != null) {
+                if (newPoint.irr <= min.irr) {
+                    min = newPoint
+                }
+                if (newPoint.irr >= max.irr) {
+                    max = newPoint
+                }
+            }
+            if ((min.nfv > 0 && max.nfv > 0) || (min.nfv < 0 && max.nfv < 0)) {
+                error('Could not find initial boundaries..');
+                return;
+            }
+            let minMax
+            if (min.nfv == 0) {
+                minMax = new MinMax(min, min)
+            } else if (max.nfv == 0) {
+                minMax = new MinMax(max, max)
+            } else {
+                minMax = new MinMax(min, max)
+            }
             this._initialMinMax = minMax;
             this._currentMinMax = minMax;
             info(`Initial Min Max:: min:${this._initialMinMax.min.irr} max:${this._initialMinMax.max.irr}`);
         }
+    }
+
+    tryToGetPointCheck(needPositive) {
+        let rate1 = compoundRate(this._totalPositiveCashFlow, -1 * this._totalNegativeCashFlow, 1)
+        let rate2 = compoundRate(-1 * this._totalNegativeCashFlow, this._totalPositiveCashFlow, 1)
+        let point1 = new IRRNFV(rate1, getNFV(this._cashFlows, rate1))
+        let point2 = new IRRNFV(rate2, getNFV(this._cashFlows, rate2))
+        if (needPositive && point1.nfv >= 0) {
+            return point1
+        }
+        if (needPositive && point2.nfv >= 0) {
+            return point2
+        }
+        if (!needPositive && point1.nfv <= 0) {
+            return point1
+        }
+        if (!needPositive && point2.nfv <= 0) {
+            return point2
+        }
+        return null;
     }
 
     get irrNFVData() {
@@ -193,17 +238,24 @@ class CashFlowInfo {
     get irrData() {
         let data = new Array();
         if (this._irr == undefined) {
+            let startTime = performance.now()
             let increment = Math.pow(0.1, this._precision);
+            let count = 1;
             if (this._currentMinMax.min.nfv == 0) {
                 this._irr = this._currentMinMax.min;
             } else if (this._currentMinMax.max.nfv == 0) {
                 this._irr = this._currentMinMax.min;
             } else {
+                let maxIterations = Math.log2((this._currentMinMax.max.irr - this._currentMinMax.min.irr) / increment) + 1;
                 while ((this._currentMinMax.max.irr - this._currentMinMax.min.irr) > increment) {
                     this.setNewMinMax();
                     if (this._currentMinMax.min.nfv == 0 || this._currentMinMax.max.nfv == 0) {
                         break;
                     }
+                    if (count > maxIterations) {
+                        return NaN
+                    }
+                    count++;
                 }
                 if (Math.abs(this._currentMinMax.min.nfv) < Math.abs(this._currentMinMax.max.nfv)) {
                     this._irr = this._currentMinMax.min;
@@ -211,6 +263,8 @@ class CashFlowInfo {
                     this._irr = this._currentMinMax.max;
                 }
             }
+            let endTime = performance.now()
+            info(`Time taken ${endTime - startTime} milliseconds. Number of iterations: ${count}`)
             info(`***** irr: ${this._irr.irr} ***`);
         }
         data.push({'x': this._irr.irr, 'y': this._irr.nfv})
