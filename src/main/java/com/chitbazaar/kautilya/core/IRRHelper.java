@@ -99,14 +99,6 @@ public class IRRHelper {
         setNFVAndReturn(cashFlowInfo, xAxisCut, positiveNFVToReturnSet, negativeNFVToReturnSet);
     }
 
-    public IRRAndNFV getTangentialCut(IRRAndNFV n, CashFlowInfo cashFlowInfo) {
-        Double nMinusOnePrecision = n.ratePerInterval - cashFlowInfo.precision;
-        Double nPlusOnePrecision = n.ratePerInterval + cashFlowInfo.precision;
-        IRRAndNFV nMinusOne = new IRRAndNFV(nMinusOnePrecision, futureValueCalculator.netFutureValue(cashFlowInfo.cashFlows, nMinusOnePrecision));
-        IRRAndNFV nPlusOne = new IRRAndNFV(nPlusOnePrecision, futureValueCalculator.netFutureValue(cashFlowInfo.cashFlows, nPlusOnePrecision));
-        return getXAxisCut(nMinusOne, nPlusOne, cashFlowInfo.cashFlows);
-    }
-
     public void setNFVAndReturn(CashFlowInfo cashFlowInfo, IRRAndNFV irrAndNFV, Set<IRRAndNFV> positiveNFVToReturnSet, Set<IRRAndNFV> negativeNFVToReturnSet) {
         if (Objects.isNull(irrAndNFV) || irrAndNFV.nfv.isNaN() || irrAndNFV.ratePerInterval.isNaN()) {
             return;

@@ -20,7 +20,7 @@ let updateDataConfig = function () {
 let getNFV = function (cashFlows, r) {
     let nfv = 0;
     for (let i = 0; i < cashFlows.length; i++) {
-        nfv += cashFlows[i] * Math.pow(1 + r / 100, cashFlows.length - i);
+        nfv += cashFlows[i] * Math.pow(1 + r / 100, cashFlows.length - i - 1);
     }
     return nfv;
 }
