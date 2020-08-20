@@ -9,14 +9,14 @@ import java.util.List;
 
 public class IRRCalculator {
     public static final Integer MIN_PRECISION = 0;
-    public static final Integer MAX_PRECISION = 13;
+    public static final Integer MAX_PRECISION = 6;
     private final int defaultPrecision;
     private FutureValueCalculator futureValueCalculator = new FutureValueCalculator();
     private CompoundingCalculator compoundingCalculator = new CompoundingCalculator();
     private IRRHelper irrHelper = new IRRHelper();
 
     public IRRCalculator() {
-        this(10);
+        this(4);
     }
 
     public IRRCalculator(int precision) {
@@ -55,7 +55,7 @@ public class IRRCalculator {
         MinMaxIRRAndNFV minMaxIRRAndNFV = irrHelper.getInitialBounderies(cashFlowInfo);
         Double increment = cashFlowInfo.increment;
         Double maxDiff = increment + increment;
-        Double maxIterations = NumberUtils.log2((minMaxIRRAndNFV.max.ratePerInterval - minMaxIRRAndNFV.min.ratePerInterval) / increment) + 1;
+        int maxIterations = 1000;
         Double count = 0d;
         while (true) {
             if (minMaxIRRAndNFV.min.nfv == 0) {

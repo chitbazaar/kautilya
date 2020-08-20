@@ -20,7 +20,7 @@ class CashFlowInfoSpec extends Specification {
     @Unroll
     def 'negative cash flow scenarios'() {
         when:
-        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFLows, 10)
+        CashFlowInfo cashFlowInfo = new CashFlowInfo(cashFLows, IRRCalculator.MAX_PRECISION)
         then:
         cashFlowInfo.positiveCashFlowCount == 2
         cashFlowInfo.negativeCashFlowCount == 1

@@ -11,10 +11,10 @@ window.chartColors = {
 let updateDataConfig = function () {
     let cashFlowInfo = new CashFlowInfo(getCashFlows());
     config.data.datasets[0].data = cashFlowInfo.irrNFVData;
-    config.data.datasets[1].data = cashFlowInfo.initialMinMaxData;
-    config.data.datasets[2].data = cashFlowInfo.otherCheckPointData;
-    config.data.datasets[3].data = cashFlowInfo.currentMinMaxData;
-    config.data.datasets[4].data = cashFlowInfo.irrData;
+    // config.data.datasets[1].data = cashFlowInfo.initialMinMaxData;
+    // config.data.datasets[2].data = cashFlowInfo.otherCheckPointData;
+    // config.data.datasets[3].data = cashFlowInfo.currentMinMaxData;
+    // config.data.datasets[4].data = cashFlowInfo.irrData;
 };
 
 let getNFV = function (cashFlows, r) {
@@ -67,7 +67,7 @@ class CashFlowInfo {
         this._totalNegativeCashFlow = 0;
         this._irrsWithPositiveNFV = new Array();
         this._irrsWithNegativeNFV = new Array();
-        this._precision = 0.0001;
+        this._precision = parseFloat(document.getElementById('precisionInput').value);
         for (let i = 0; i < cashFlows.length; i++) {
             let cashFlow = cashFlows[i];
             if (cashFlow > 0) {
@@ -161,13 +161,24 @@ class CashFlowInfo {
     get irrNFVData() {
         let data = new Array()
         let cashFlows = this._cashFlows;
-        let minMax = this._initialMinMax;
-        if (minMax === null) {
-            return []
-        }
-        let increment = (minMax.max.irr - minMax.min.irr) / 200
-        let from = minMax.min.irr - increment
-        let to = minMax.max.irr + increment
+        // let minMax = this._initialMinMax;
+        // if (minMax === null) {
+        //     return []
+        // }
+        let from
+        let to
+        from = -200
+        to = -150
+        // if (minMax.min.irr != minMax.max.irr) {
+        //     from = -2000
+        //     to = 2000
+        //     // from = minMax.min.irr - 200
+        //     // to = minMax.max.irr + 200
+        // } else {
+        //     from = minMax.min.irr - 1
+        //     to = minMax.max.irr + 1
+        // }
+        let increment = (to - from) / 200
         for (let i = from; i <= to; i = i + increment) {
             data.push({'x': i, 'y': getNFV(cashFlows, i)})
         }
@@ -247,6 +258,7 @@ class CashFlowInfo {
                 this._irr = this._currentMinMax.min;
             } else {
                 let maxIterations = Math.log2((this._currentMinMax.max.irr - this._currentMinMax.min.irr) / increment) + 1;
+                info(`Max iterations: ${maxIterations}`)
                 while ((this._currentMinMax.max.irr - this._currentMinMax.min.irr) > increment) {
                     this.setNewMinMax();
                     if (this._currentMinMax.min.nfv == 0 || this._currentMinMax.max.nfv == 0) {
@@ -263,6 +275,7 @@ class CashFlowInfo {
                     this._irr = this._currentMinMax.max;
                 }
             }
+            this._irr.irr = this._irr.irr.toFixed(this._precision);
             let endTime = performance.now()
             info(`Time taken ${endTime - startTime} milliseconds. Number of iterations: ${count}`)
             info(`***** irr: ${this._irr.irr} ***`);

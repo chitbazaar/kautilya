@@ -10,39 +10,45 @@ public class IRRPerformanceCheck {
     Double numberOfTries = 1000d;
 
     public static void main(String[] args) {
-        IRRPerformanceCheck irrPerformanceCheck = new IRRPerformanceCheck();
-        double[][] inputs = {
-                {-1000,1},
-                {-100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, 478263.3456652112d},
-                {-100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, 1195.882185377919d},
-                {-100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, 665802.7616772739d},
-                {100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -91965802.7616772739d},
-                {-6000000d, -3000000d, -3000000d, -3000000d, 5000000d, 5000000d, 5000000d, 5000000d, 5000000d, 5000000d, 6600000d, 6600000d, 6600000d, 6600000d, 10600000d, 10600000d, 10600000d, 10600000d, 10600000d, 10600000d, 19000000d, 19000000d, 19000000d, 19000000d, 19000000d, 31000000d, 31000000d, 31000000d, 31000000d, 31000000d}
-        };
-        List<PerformanceInfo> poiPerformanceList = new ArrayList<>();
         StringBuilder poiReport = new StringBuilder("===========POI Report======\n");
-        for (double[] cashFlows : inputs) {
-            poiReport.append("\nCash flows: ").append(irrPerformanceCheck.toList(cashFlows).toString()).append("\n");
-            PerformanceInfo performanceInfo = irrPerformanceCheck.checkPOIIRR(cashFlows);
-            irrPerformanceCheck.updateReport(poiReport, performanceInfo);
-            poiPerformanceList.add(performanceInfo);
+        StringBuilder myIRRReport = new StringBuilder("===========Durga's IRR Report======\n");
+        try {
+            IRRPerformanceCheck irrPerformanceCheck = new IRRPerformanceCheck();
+            double[][] inputs = {
+                    {-1000, 1},
+                    {-10, -10, 10, -10, -10, -10, -10, 10, -10, -10, -10, -10, 10, -10, -10, -10, -10, 10, -10, -10, -10, -10, 10, -10, -10, -10, -10, 10, -10, -10, -10, -10, 10, -10, -10},
+                    {-100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, 478263.3456652112d},
+                    {-100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, -100.0d, 1195.882185377919d},
+                    {-100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, -100000.0d, 665802.7616772739d},
+                    {100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -100000.0d, 100000.0d, 100000.0d, 100000.0d, 100000.0d, -91965802.7616772739d},
+                    {-6000000d, -3000000d, -3000000d, -3000000d, 5000000d, 5000000d, 5000000d, 5000000d, 5000000d, 5000000d, 6600000d, 6600000d, 6600000d, 6600000d, 10600000d, 10600000d, 10600000d, 10600000d, 10600000d, 10600000d, 19000000d, 19000000d, 19000000d, 19000000d, 19000000d, 31000000d, 31000000d, 31000000d, 31000000d, 31000000d}
+            };
+            List<PerformanceInfo> poiPerformanceList = new ArrayList<>();
+            for (double[] cashFlows : inputs) {
+                poiReport.append("\nCash flows: ").append(irrPerformanceCheck.toList(cashFlows).toString()).append("\n");
+                PerformanceInfo performanceInfo = irrPerformanceCheck.checkPOIIRR(cashFlows);
+                irrPerformanceCheck.updateReport(poiReport, performanceInfo);
+                poiPerformanceList.add(performanceInfo);
+            }
+            List<PerformanceInfo> myIRRPerformanceList = new ArrayList<>();
+            for (double[] cashFlowsArray : inputs) {
+                List<Number> cashFlows = irrPerformanceCheck.toList(cashFlowsArray);
+                myIRRReport.append("\nCash flows: ").append(cashFlows.toString()).append("\n");
+                List<PerformanceInfo> performanceInfos = irrPerformanceCheck.checkMyIRR(cashFlows);
+                irrPerformanceCheck.updateReport(myIRRReport, performanceInfos);
+                myIRRPerformanceList.addAll(performanceInfos);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         System.out.println(poiReport);
-        StringBuilder myIRRReport = new StringBuilder("===========Durga's IRR Report======\n");
-        List<PerformanceInfo> myIRRPerformanceList = new ArrayList<>();
-        for (double[] cashFlowsArray : inputs) {
-            List<Number> cashFlows = irrPerformanceCheck.toList(cashFlowsArray);
-            myIRRReport.append("\nCash flows: ").append(cashFlows.toString()).append("\n");
-            List<PerformanceInfo> performanceInfos = irrPerformanceCheck.checkMyIRR(cashFlows);
-            irrPerformanceCheck.updateReport(myIRRReport, performanceInfos);
-            myIRRPerformanceList.addAll(performanceInfos);
-        }
         System.out.println(myIRRReport);
     }
 
-    private void updateReport(StringBuilder report, PerformanceInfo performanceInfo){
+    private void updateReport(StringBuilder report, PerformanceInfo performanceInfo) {
         report.append(performanceInfo.toString()).append("\n");
     }
+
     private void updateReport(StringBuilder report, List<PerformanceInfo> performanceInfos) {
         for (PerformanceInfo performanceInfo : performanceInfos) {
             updateReport(report, performanceInfo);
@@ -60,7 +66,7 @@ public class IRRPerformanceCheck {
     List<PerformanceInfo> checkMyIRR(List<Number> cashFlows) {
 
         List<PerformanceInfo> infos = new ArrayList<>();
-        for (int precision = 0; precision <= 14; precision += 2) {
+        for (int precision = 0; precision <= 6; precision++) {
 //            System.out.printf("Checking for precision %s\n", precision);
             IRRCalculator irrCalculator = new IRRCalculator(precision);
             Double averageTime = 0d;

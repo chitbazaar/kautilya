@@ -47,6 +47,8 @@ class IRRCalculatorSpec extends Specification {
         'Multiple zero cuts 2'  || [0.5, -4, -4, -4, -4, 10, 0.4]
         'Interesting'           || [5, -4, -4, -4, -4, 17]
         'Interesting 2'         || [17, -4, -4, -4, -4, 5]
+        'Extreme 1'             || [-1, -1, 0, 10000000]
+        'Extreme 2'             || [-10000000, 0, 1, 1]
     }
 
     def 'Check precision'() {
