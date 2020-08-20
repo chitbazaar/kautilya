@@ -11,10 +11,10 @@ window.chartColors = {
 let updateDataConfig = function () {
     let cashFlowInfo = new CashFlowInfo(getCashFlows());
     config.data.datasets[0].data = cashFlowInfo.irrNFVData;
-    // config.data.datasets[1].data = cashFlowInfo.initialMinMaxData;
-    // config.data.datasets[2].data = cashFlowInfo.otherCheckPointData;
-    // config.data.datasets[3].data = cashFlowInfo.currentMinMaxData;
-    // config.data.datasets[4].data = cashFlowInfo.irrData;
+    config.data.datasets[1].data = cashFlowInfo.initialMinMaxData;
+    config.data.datasets[2].data = cashFlowInfo.otherCheckPointData;
+    config.data.datasets[3].data = cashFlowInfo.currentMinMaxData;
+    config.data.datasets[4].data = cashFlowInfo.irrData;
 };
 
 let getNFV = function (cashFlows, r) {
@@ -114,9 +114,11 @@ class CashFlowInfo {
             }
             if (newPoint != null) {
                 if (newPoint.irr <= min.irr) {
+                    max = min
                     min = newPoint
                 }
                 if (newPoint.irr >= max.irr) {
+                    min = max
                     max = newPoint
                 }
             }
@@ -139,45 +141,50 @@ class CashFlowInfo {
     }
 
     tryToGetPointCheck(needPositive) {
-        let rate1 = compoundRate(this._totalPositiveCashFlow, -1 * this._totalNegativeCashFlow, 1)
-        let rate2 = compoundRate(-1 * this._totalNegativeCashFlow, this._totalPositiveCashFlow, 1)
-        let point1 = new IRRNFV(rate1, getNFV(this._cashFlows, rate1))
-        let point2 = new IRRNFV(rate2, getNFV(this._cashFlows, rate2))
-        if (needPositive && point1.nfv >= 0) {
-            return point1
+        let point = null;
+        let increment = 10;
+        for (let i = 0; i <= 1000; i += increment) {
+            let foundResult = false;
+            for (let rate = i; rate < i + increment; rate += 1) {
+                point = new IRRNFV(rate, getNFV(this._cashFlows, rate))
+                if (needPositive && point.nfv >= 0 || !needPositive && point.nfv <= 0) {
+                    foundResult = true;
+                    break;
+                }
+            }
+            if (foundResult) {
+                break;
+            }
+            for (let rate = -1 * i; rate > -1 * i - increment; rate -= 1) {
+                point = new IRRNFV(rate, getNFV(this._cashFlows, rate))
+                if (needPositive && point.nfv >= 0 || !needPositive && point.nfv <= 0) {
+                    foundResult = true;
+                    break;
+                }
+            }
+            if (foundResult) {
+                break;
+            }
         }
-        if (needPositive && point2.nfv >= 0) {
-            return point2
-        }
-        if (!needPositive && point1.nfv <= 0) {
-            return point1
-        }
-        if (!needPositive && point2.nfv <= 0) {
-            return point2
-        }
-        return null;
+        return point;
     }
 
     get irrNFVData() {
         let data = new Array()
         let cashFlows = this._cashFlows;
-        // let minMax = this._initialMinMax;
-        // if (minMax === null) {
-        //     return []
-        // }
+        let minMax = this._initialMinMax;
+        if (minMax === null) {
+            return []
+        }
         let from
         let to
-        from = -200
-        to = -150
-        // if (minMax.min.irr != minMax.max.irr) {
-        //     from = -2000
-        //     to = 2000
-        //     // from = minMax.min.irr - 200
-        //     // to = minMax.max.irr + 200
-        // } else {
-        //     from = minMax.min.irr - 1
-        //     to = minMax.max.irr + 1
-        // }
+        if (minMax.min.irr == minMax.max.irr) {
+            from = minMax.min.irr - 200
+            to = minMax.max.irr + 200
+        } else {
+            from = minMax.min.irr - 1
+            to = minMax.max.irr + 1
+        }
         let increment = (to - from) / 200
         for (let i = from; i <= to; i = i + increment) {
             data.push({'x': i, 'y': getNFV(cashFlows, i)})

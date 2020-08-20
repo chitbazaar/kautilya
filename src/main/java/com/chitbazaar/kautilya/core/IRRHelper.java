@@ -59,21 +59,27 @@ public class IRRHelper {
         int increment = 10;
         //Try practical returns
         for (int i = 0; i <= 10000; i += increment) {
+            boolean foundResult = false;
             for (double rate = i; rate < i + increment; rate += 1) {
                 irrAndNFV = getIRRandNFV(rate, cashFlowInfo.cashFlows);
                 setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
                 if (positiveNFVToReturnSet.size() > 0 && negativeNFVToReturnSet.size() > 0) {
+                    foundResult = true;
                     break;
                 }
+            }
+            if(foundResult){
+                break;
             }
             for (double rate = -1 * i; rate > -1 * i - increment; rate -= 1) {
                 irrAndNFV = getIRRandNFV(rate, cashFlowInfo.cashFlows);
                 setNFVAndReturn(cashFlowInfo, irrAndNFV, positiveNFVToReturnSet, negativeNFVToReturnSet);
                 if (positiveNFVToReturnSet.size() > 0 && negativeNFVToReturnSet.size() > 0) {
+                    foundResult = true;
                     break;
                 }
             }
-            if (positiveNFVToReturnSet.size() > 0 && negativeNFVToReturnSet.size() > 0) {
+            if (foundResult) {
                 break;
             }
         }
