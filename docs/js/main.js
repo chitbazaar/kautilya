@@ -8,14 +8,112 @@ window.chartColors = {
     grey: 'rgb(201, 203, 207)'
 };
 
+let config = {
+    type: 'line',
+    data: {
+        datasets: [{
+            label: '~IRR vs NFV',
+            backgroundColor: window.chartColors.blue,
+            borderColor: window.chartColors.blue,
+            borderWidth: 1,
+            pointRadius: 0,
+            fill: false,
+            data: []
+        }, {
+            label: 'Min Max Check Points',
+            backgroundColor: window.chartColors.red,
+            borderColor: window.chartColors.red,
+            type: 'scatter',
+            pointRadius: 10,
+            pointStyle: 'triangle',
+            pointBorderColor: window.chartColors.red,
+            data: []
+        }, {
+            label: 'Other Check Points',
+            backgroundColor: window.chartColors.orange,
+            borderColor: window.chartColors.orange,
+            type: 'scatter',
+            pointRadius: 10,
+            pointStyle: 'star',
+            pointBorderColor: window.chartColors.orange,
+            data: []
+        }, {
+            label: 'Final min max',
+            backgroundColor: window.chartColors.yellow,
+            borderColor: window.chartColors.yellow,
+            type: 'scatter',
+            pointRadius: 10,
+            pointStyle: 'triangle',
+            pointBorderColor: window.chartColors.yellow,
+            data: []
+        }, {
+            label: 'IRR',
+            backgroundColor: window.chartColors.green,
+            borderColor: window.chartColors.green,
+            type: 'scatter',
+            pointRadius: 15,
+            pointStyle: 'rectRot',
+            pointBorderColor: window.chartColors.green,
+            data: []
+        }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            xAxes: [{
+                type: 'linear',
+                position: 'bottom'
+            }]
+        }
+    }
+};
+
 let updateDataConfig = function () {
     let cashFlowInfo = new CashFlowInfo(getCashFlows());
     config.data.datasets[0].data = cashFlowInfo.irrNFVData;
     config.data.datasets[1].data = cashFlowInfo.initialMinMaxData;
     config.data.datasets[2].data = cashFlowInfo.otherCheckPointData;
+    if(!document.getElementById('plotOtherCheckPoints').checked){
+        config.data.datasets[2].data = []
+    }
     config.data.datasets[3].data = cashFlowInfo.currentMinMaxData;
+    if(!document.getElementById('plotFinalMinMax').checked){
+        config.data.datasets[3].data = []
+    }
     config.data.datasets[4].data = cashFlowInfo.irrData;
 };
+
+let clearDataConfig = function () {
+    config.data.datasets[0].data = [];
+    config.data.datasets[1].data = [];
+    config.data.datasets[2].data = [];
+    config.data.datasets[3].data = [];
+    config.data.datasets[4].data = [];
+};
+
+window.onload = function () {
+    let ctx = document.getElementById('canvas').getContext('2d');
+    updateDataConfig();
+    window.myLine = new Chart(ctx, config);
+};
+
+document.getElementById('plotIRRToNFV').addEventListener('click', function () {
+    info(null);
+    error('');
+    updateDataConfig();
+    window.myLine.update();
+});
+
+document.getElementById('clearCashFlows').addEventListener('click', function () {
+    document.getElementById('cashFlowsInput').value = '';
+    info(null);
+    error('');
+    clearDataConfig();
+    window.myLine.update();
+});
+
+
 
 let getNFV = function (cashFlows, r) {
     let nfv = 0;

@@ -2,7 +2,6 @@
 <head>
     <title>Kautilya by Chit Bazaar</title>
     <script src="https://www.chartjs.org/dist/2.9.3/Chart.min.js"></script>
-    <script src="js/main.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.rawgit.com/Chalarangelo/mini.css/v3.0.1/dist/mini-default.min.css">
     <style>
@@ -11,108 +10,64 @@
             -webkit-user-select: none;
             -ms-user-select: none;
         }
+
+        div#body {
+            margin-left: 2%;
+            margin-right: 2%;
+        }
+
+        div#info {
+            color: black;
+            width: 100%;
+            height: 100px;
+            overflow: auto;
+        }
+
+        div#error {
+            color: red;
+            width: 100%
+        }
     </style>
 </head>
 <body>
-<h1>IRR Calculator</h1>
-<div>
-    <label> Select Precision
-        <select id="precisionInput">
-            <option>0</option>
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option selected>4</option>
-        </select>
-    </label>
-</div>
-<div>
-    <label>Please enter cash flows in comma separated values(csv)</label>
-    <!--    <textarea id="cashFlowsInput" style="width: 100%;">5, -4, -4, -4, -4, 17</textarea>-->
-    <!--    <textarea id="cashFlowsInput" style="width: 100%;">-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,100000000000000</textarea>-->
-    <textarea id="cashFlowsInput" style="width: 100%;">-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10</textarea>
-    <button id="plotIRRToNFV">Plot IRR to NFV</button>
-    <div style="color: red; width: 100%" id="error"></div>
-    <div style="color: black; width: 90%; height: 100px; overflow: auto;" id="info"></div>
-    <div style="width:100%;">
-        <canvas id="canvas"></canvas>
+<div id="body">
+    <h1>IRR Calculator</h1>
+    <div>
+        <label> Select Precision
+            <select id="precisionInput">
+                <option>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option selected>4</option>
+            </select>
+        </label>
+    </div>
+    <div>
+        <label>Please enter cash flows in comma separated values(Use negative to represent outflow and positive for
+            inflow)</label>
+        <!--    <textarea id="cashFlowsInput" style="width: 100%;">5, -4, -4, -4, -4, 17</textarea>-->
+        <!--    <textarea id="cashFlowsInput" style="width: 100%;">-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,100000000000000</textarea>-->
+        <!--    <textarea id="cashFlowsInput" style="width: 100%;">-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10,-10,-10,10,-10,-10</textarea>-->
+        <textarea id="cashFlowsInput" style="width: 100%;">-10000,-10000,-1000,-10000,100000</textarea>
+        <div>
+            <label>Plot other check points<input type="checkbox" id="plotOtherCheckPoints"></label>
+            <label>Plot final Min Max<input type="checkbox" id="plotFinalMinMax"></label>
+        </div>
+        <div>
+            <button id="plotIRRToNFV">Plot IRR to NFV</button>
+            <button id="clearCashFlows">Clear</button>
+        </div>
+        <div>
+            Scrollable info
+            <div id="error"></div>
+            <div id="info"></div>
+        </div>
+        <div style="width:100%;">
+            <canvas id="canvas"></canvas>
+        </div>
     </div>
 </div>
-<script>
-    let config = {
-        type: 'line',
-        data: {
-            datasets: [{
-                label: '~IRR vs NFV',
-                backgroundColor: window.chartColors.blue,
-                borderColor: window.chartColors.blue,
-                borderWidth: 1,
-                pointRadius: 0,
-                fill: false,
-                data: []
-            }, {
-                label: 'Min Max Check Points',
-                backgroundColor: window.chartColors.red,
-                borderColor: window.chartColors.red,
-                type: 'scatter',
-                pointRadius: 10,
-                pointStyle: 'triangle',
-                pointBorderColor: window.chartColors.red,
-                data: []
-            }, {
-                label: 'Other Check Points',
-                backgroundColor: window.chartColors.orange,
-                borderColor: window.chartColors.orange,
-                type: 'scatter',
-                pointRadius: 10,
-                pointStyle: 'star',
-                pointBorderColor: window.chartColors.orange,
-                data: []
-            }, {
-                label: 'Final min max',
-                backgroundColor: window.chartColors.yellow,
-                borderColor: window.chartColors.yellow,
-                type: 'scatter',
-                pointRadius: 10,
-                pointStyle: 'triangle',
-                pointBorderColor: window.chartColors.yellow,
-                data: []
-            }, {
-                label: 'IRR',
-                backgroundColor: window.chartColors.green,
-                borderColor: window.chartColors.green,
-                type: 'scatter',
-                pointRadius: 15,
-                pointStyle: 'rectRot',
-                pointBorderColor: window.chartColors.green,
-                data: []
-            }
-            ]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                xAxes: [{
-                    type: 'linear',
-                    position: 'bottom'
-                }]
-            }
-        }
-    };
-
-    window.onload = function () {
-        let ctx = document.getElementById('canvas').getContext('2d');
-        updateDataConfig();
-        window.myLine = new Chart(ctx, config);
-    };
-
-    document.getElementById('plotIRRToNFV').addEventListener('click', function () {
-        info(null);
-        error('');
-        updateDataConfig();
-        window.myLine.update();
-    });
-
-</script>
+<script src="js/main.js"></script>
 </body>
 </html>
