@@ -9,6 +9,10 @@ import java.util.List;
 
 public class IRRCalculator {
     public static final Integer MIN_PRECISION = 0;
+    // Somehow in java following gives different values do not increase precision more than 13 in case this code is modified.
+    // double value = ((25.759135891535635 + 25.75913589153564) / 2)
+    // println value
+    // println((25.759135891535635 + 25.75913589153564) / 2)
     public static final Integer MAX_PRECISION = 6;
     private final int defaultPrecision;
     private FutureValueCalculator futureValueCalculator = new FutureValueCalculator();
@@ -20,11 +24,6 @@ public class IRRCalculator {
     }
 
     public IRRCalculator(int precision) {
-//        Somehow in java following gives different values so precision is restricted to 13
-//        double value = ((25.759135891535635 + 25.75913589153564) / 2)
-//        println value
-//        println((25.759135891535635 + 25.75913589153564) / 2)
-
         if (precision < MIN_PRECISION || precision > MAX_PRECISION) {
             throw new IRRException(String.format("Precision supported %s to %s inclusive", MIN_PRECISION, MAX_PRECISION));
         }
