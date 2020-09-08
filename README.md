@@ -38,6 +38,7 @@ println irrCalculator.irr(cashFlows)
 Also refer CompoundingCalculatorm, FutureValueCalculator, PresentValueCalculator 
 
 ###Artifacts
+https://repo1.maven.org/maven2/com/chitbazaar/kautilya/
 https://mvnrepository.com/artifact/com.chitbazaar/kautilya
 #### Gradle dependency
 ```
